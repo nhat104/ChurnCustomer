@@ -1,12 +1,13 @@
 import {
   _id,
+  _index,
   _price,
   _times,
-  _company,
   _boolean,
   _fullName,
   _taskNames,
   _postTitles,
+  _calculation,
   _description,
   _productNames,
 } from './_mock';
@@ -24,23 +25,12 @@ export const _myAccount = {
 export const _users = [...Array(24)].map((_, index) => ({
   id: _id(index),
   name: _fullName(index),
-  company: _company(index),
-  isVerified: _boolean(index),
-  avatarUrl: `/assets/images/avatar/avatar-${index + 1}.webp`,
+  cutoffSelection: _calculation(index),
+  finished: _boolean(index),
+  calculation: _calculation(index),
+  index: _index(index),
   status: index % 4 ? 'active' : 'banned',
-  role:
-    [
-      'Leader',
-      'Hr Manager',
-      'UI Designer',
-      'UX Designer',
-      'UI/UX Designer',
-      'Project Manager',
-      'Backend Developer',
-      'Full Stack Designer',
-      'Front End Developer',
-      'Full Stack Developer',
-    ][index] || 'UI Designer',
+  createdAt: _times(index),
 }));
 
 // ----------------------------------------------------------------------

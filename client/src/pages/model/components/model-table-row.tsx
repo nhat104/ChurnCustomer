@@ -1,37 +1,39 @@
 import { useState, useCallback } from 'react';
 
-import Box from '@mui/material/Box';
-import Avatar from '@mui/material/Avatar';
-import Popover from '@mui/material/Popover';
-import TableRow from '@mui/material/TableRow';
-import Checkbox from '@mui/material/Checkbox';
-import MenuList from '@mui/material/MenuList';
-import TableCell from '@mui/material/TableCell';
 import IconButton from '@mui/material/IconButton';
 import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
+import {
+  Avatar,
+  Popover,
+  Checkbox,
+  TableRow,
+  MenuList,
+  TableCell,
+  Typography,
+} from '@mui/material';
 
-import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
-export type UserProps = {
+export type ModelProps = {
   id: string;
   name: string;
-  role: string;
+  calculation: number;
   status: string;
-  company: string;
-  avatarUrl: string;
+  cutoffSelection: number;
+  index: string;
   finished: boolean;
+  createdAt: string;
 };
 
-type UserTableRowProps = {
-  row: UserProps;
+type ModelTableRowProps = {
+  row: ModelProps;
   selected: boolean;
   onSelectRow: () => void;
 };
 
-export function UserTableRow({ row, selected, onSelectRow }: UserTableRowProps) {
+export function ModelTableRow({ row, selected, onSelectRow }: ModelTableRowProps) {
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
 
   const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
@@ -50,15 +52,24 @@ export function UserTableRow({ row, selected, onSelectRow }: UserTableRowProps) 
         </TableCell>
 
         <TableCell component="th" scope="row">
-          <Box gap={2} display="flex" alignItems="center">
-            <Avatar alt={row.name} src={row.avatarUrl} />
-            {row.name}
-          </Box>
+          <Avatar
+            alt={row.name}
+            sx={{ bgcolor: 'primary.light', width: 46, height: 46, fontSize: 16 }}
+          >
+            {row.index}
+          </Avatar>
         </TableCell>
 
-        <TableCell>{row.company}</TableCell>
+        <TableCell>{row.name}</TableCell>
 
-        <TableCell>{row.role}</TableCell>
+        <TableCell align="center">
+          0.5
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            Last scoring 18.10.2024
+          </Typography>
+        </TableCell>
+
+        <TableCell align="center">{row.calculation}</TableCell>
 
         <TableCell align="center">
           {row.finished ? (
@@ -68,9 +79,11 @@ export function UserTableRow({ row, selected, onSelectRow }: UserTableRowProps) 
           )}
         </TableCell>
 
-        <TableCell>
+        <TableCell>{row.createdAt}</TableCell>
+
+        {/* <TableCell>
           <Label color={(row.status === 'banned' && 'error') || 'success'}>{row.status}</Label>
-        </TableCell>
+        </TableCell> */}
 
         <TableCell align="right">
           <IconButton onClick={handleOpenPopover}>
@@ -91,7 +104,7 @@ export function UserTableRow({ row, selected, onSelectRow }: UserTableRowProps) 
           sx={{
             p: 0.5,
             gap: 0.5,
-            width: 140,
+            width: 200,
             display: 'flex',
             flexDirection: 'column',
             [`& .${menuItemClasses.root}`]: {
@@ -103,8 +116,8 @@ export function UserTableRow({ row, selected, onSelectRow }: UserTableRowProps) 
           }}
         >
           <MenuItem onClick={handleClosePopover}>
-            <Iconify icon="solar:pen-bold" />
-            Edit
+            <Iconify icon="fluent:predictions-20-filled" />
+            Start Predicting
           </MenuItem>
 
           <MenuItem onClick={handleClosePopover} sx={{ color: 'error.main' }}>

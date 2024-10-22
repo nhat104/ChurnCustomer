@@ -48,7 +48,7 @@ export function DashboardContent({
   return (
     <Container
       className={layoutClasses.content}
-      maxWidth={maxWidth || false}
+      maxWidth={maxWidth}
       sx={{
         display: 'flex',
         flex: '1 1 auto',

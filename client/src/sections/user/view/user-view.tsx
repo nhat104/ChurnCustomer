@@ -31,13 +31,13 @@ export function UserView() {
 
   const [filterName, setFilterName] = useState('');
 
-  const dataFiltered: UserProps[] = applyFilter({
-    inputData: _users,
-    comparator: getComparator(table.order, table.orderBy),
-    filterName,
-  });
+  // const dataFiltered: UserProps[] = applyFilter({
+  //   inputData: _users,
+  //   comparator: getComparator(table.order, table.orderBy),
+  //   filterName,
+  // });
 
-  const notFound = !dataFiltered.length && !!filterName;
+  // const notFound = !dataFiltered.length && !!filterName;
 
   return (
     <DashboardContent>
@@ -89,7 +89,7 @@ export function UserView() {
                 ]}
               />
               <TableBody>
-                {dataFiltered
+                {/* {dataFiltered
                   .slice(
                     table.page * table.rowsPerPage,
                     table.page * table.rowsPerPage + table.rowsPerPage
@@ -101,14 +101,14 @@ export function UserView() {
                       selected={table.selected.includes(row.id)}
                       onSelectRow={() => table.onSelectRow(row.id)}
                     />
-                  ))}
+                  ))} */}
 
                 <TableEmptyRows
                   height={68}
                   emptyRows={emptyRows(table.page, table.rowsPerPage, _users.length)}
                 />
 
-                {notFound && <TableNoData searchQuery={filterName} />}
+                {/* {notFound && <TableNoData searchQuery={filterName} />} */}
               </TableBody>
             </Table>
           </TableContainer>

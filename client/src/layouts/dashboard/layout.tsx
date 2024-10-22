@@ -19,6 +19,7 @@ import { _workspaces } from '../config-nav-workspace';
 import { MenuButton } from '../components/menu-button';
 import { LayoutSection } from '../core/layout-section';
 import { HeaderSection } from '../core/header-section';
+import { FooterSection } from '../core/footer-section';
 import { AccountPopover } from '../components/account-popover';
 import { LanguagePopover } from '../components/language-popover';
 import { NotificationsPopover } from '../components/notifications-popover';
@@ -116,7 +117,7 @@ export function DashboardLayout({ sx, children, header }: DashboardLayoutProps) 
       /** **************************************
        * Footer
        *************************************** */
-      footerSection={null}
+      footerSection={<FooterSection />}
       /** **************************************
        * Style
        *************************************** */

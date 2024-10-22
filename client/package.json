@@ -6,15 +6,15 @@
   "private": false,
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "start": "vite preview",
+    "start": "vite",
+    "preview": "vite preview",
     "build": "tsc && vite build",
     "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\"",
     "lint:fix": "eslint --fix \"src/**/*.{js,jsx,ts,tsx}\"",
     "fm:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx}\"",
     "fm:fix": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
     "rm:all": "rm -rf node_modules .next out dist build",
-    "re:start": "yarn rm:all && yarn install && yarn dev",
+    "re:start": "yarn rm:all && yarn install && yarn start",
     "re:build": "yarn rm:all && yarn install && yarn build",
     "re:build-npm": "npm run rm:all && npm install && npm run build",
     "dev:host": "vite --host"
