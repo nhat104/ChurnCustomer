@@ -33,6 +33,19 @@ export const _users = [...Array(24)].map((_, index) => ({
   createdAt: _times(index),
 }));
 
+export const _scoreHistory = [...Array(24)].map((_, index) => ({
+  id: _id(index),
+  name: _fullName(index),
+  cutoffSelection: _calculation(index),
+  finished: _boolean(index),
+  noRecord: _calculation(index),
+  noApprove: _calculation(index),
+  noDecline: _calculation(index),
+  index: _index(index),
+  status: index % 4 ? 'active' : 'banned',
+  createdAt: _times(index),
+}));
+
 // ----------------------------------------------------------------------
 
 export const _posts = [...Array(23)].map((_, index) => ({

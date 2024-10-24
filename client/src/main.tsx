@@ -2,6 +2,7 @@ import { Provider } from 'react-redux';
 import ReactDOM from 'react-dom/client';
 import { Suspense, StrictMode } from 'react';
 import { BrowserRouter } from 'react-router-dom';
+import { NextUIProvider } from '@nextui-org/react';
 import { HelmetProvider } from 'react-helmet-async';
 
 import App from './app';
@@ -17,7 +18,9 @@ root.render(
       <Provider store={store}>
         <BrowserRouter>
           <Suspense>
-            <App />
+            <NextUIProvider>
+              <App />
+            </NextUIProvider>
           </Suspense>
         </BrowserRouter>
       </Provider>

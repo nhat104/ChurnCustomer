@@ -12,6 +12,8 @@ import { DashboardLayout } from 'src/layouts/dashboard';
 
 export const DashboardPage = lazy(() => import('src/pages/dashboard'));
 export const ModelPage = lazy(() => import('src/pages/model'));
+export const ScoreHistoryPage = lazy(() => import('src/pages/score-history'));
+export const MonitoringPage = lazy(() => import('src/pages/monitoring'));
 export const HomePage = lazy(() => import('src/pages/home'));
 export const BlogPage = lazy(() => import('src/pages/blog'));
 export const UserPage = lazy(() => import('src/pages/user'));
@@ -47,6 +49,8 @@ export function Router() {
       children: [
         { element: <DashboardPage />, index: true },
         { path: 'model', element: <ModelPage /> },
+        { path: 'scoring', element: <ScoreHistoryPage /> },
+        { path: 'monitoring', element: <MonitoringPage /> },
         { path: 'home', element: <HomePage /> },
         { path: 'user', element: <UserPage /> },
         { path: 'products', element: <ProductsPage /> },
