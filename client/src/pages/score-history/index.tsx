@@ -43,7 +43,7 @@ export default function ScoreHistory() {
   return (
     <>
       <Helmet>
-        <title> {`Predicting history - ${CONFIG.appName}`}</title>
+        <title> {`Calculation history - ${CONFIG.appName}`}</title>
       </Helmet>
 
       <DashboardContent>

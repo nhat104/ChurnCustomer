@@ -12,6 +12,8 @@ import {
   Typography,
 } from '@mui/material';
 
+import { useRouter } from 'src/routes/hooks';
+
 import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
@@ -34,6 +36,8 @@ type ModelTableRowProps = {
 };
 
 export function ModelTableRow({ row, selected, onSelectRow }: ModelTableRowProps) {
+  const router = useRouter();
+
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
 
   const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
@@ -43,6 +47,10 @@ export function ModelTableRow({ row, selected, onSelectRow }: ModelTableRowProps
   const handleClosePopover = useCallback(() => {
     setOpenPopover(null);
   }, []);
+
+  const handleDetailModel = useCallback(() => {
+    router.push(`/model/${row.id}`);
+  }, [router, row.id]);
 
   return (
     <>
@@ -115,7 +123,7 @@ export function ModelTableRow({ row, selected, onSelectRow }: ModelTableRowProps
             },
           }}
         >
-          <MenuItem onClick={handleClosePopover}>
+          <MenuItem onClick={handleDetailModel}>
             <Iconify icon="fluent:predictions-20-filled" />
             Start Predicting
           </MenuItem>

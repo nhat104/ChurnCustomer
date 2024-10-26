@@ -7,7 +7,7 @@ import { shadows, typography, components, colorSchemes, customShadows } from './
 // ----------------------------------------------------------------------
 
 export function createTheme(): Theme {
-  const initialTheme = {
+  const initialTheme: any = {
     colorSchemes,
     shadows: shadows(),
     customShadows: customShadows(),

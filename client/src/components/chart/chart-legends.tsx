@@ -16,8 +16,8 @@ export const StyledLegend = styled(Box)(({ theme }) => ({
 }));
 
 export const StyledDot = styled(Box)(() => ({
-  width: 12,
-  height: 12,
+  width: 16,
+  height: 16,
   flexShrink: 0,
   display: 'flex',
   borderRadius: '50%',
@@ -46,7 +46,7 @@ export function ChartLegends({
   ...other
 }: Props) {
   return (
-    <Box gap={2} display="flex" flexWrap="wrap" {...other}>
+    <Box gap={3} display="flex" flexWrap="wrap" {...other}>
       {labels?.map((series, index) => (
         <Stack key={series} spacing={1}>
           <StyledLegend>
@@ -61,7 +61,10 @@ export function ChartLegends({
               <StyledDot component="span" sx={{ color: colors[index] }} />
             )}
 
-            <Box component="span" sx={{ flexShrink: 0 }}>
+            <Box
+              component="span"
+              sx={{ flexShrink: 0, color: 'text.secondary', fontSize: 14, fontWeight: 400 }}
+            >
               {series}
               {sublabels && <> {` (${sublabels[index]})`}</>}
             </Box>

@@ -122,10 +122,10 @@ export function ScoreTableRow({ row, selected, onSelectRow }: ScoreTableRowProps
             },
           }}
         >
-          <MenuItem onClick={handleClosePopover}>
+          {/* <MenuItem onClick={handleClosePopover}>
             <Iconify icon="fluent:predictions-20-filled" />
             Start Predicting
-          </MenuItem>
+          </MenuItem> */}
 
           <MenuItem onClick={handleClosePopover} sx={{ color: 'error.main' }}>
             <Iconify icon="solar:trash-bin-trash-bold" />

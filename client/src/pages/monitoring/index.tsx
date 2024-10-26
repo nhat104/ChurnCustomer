@@ -38,7 +38,7 @@ export default function ScoreHistory() {
             placement="right"
             content="At some point, predictive models may steadily lose their predictive power and need to be updated. It may happen due to the data drift or due to the concept drift. If model rejection rate is stable, the model will probably do a good job"
           >
-            <Iconify className="icon-outline" icon="eva:question-mark-circle-outline" />
+            <Iconify icon="eva:question-mark-circle-outline" />
           </Tooltip>
         </Box>
 
