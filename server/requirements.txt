@@ -1,0 +1,7 @@
+fastapi
+sqlmodel
+mysql-connector-python
+pydantic-settings
+passlib
+bcrypt==4.0.1
+pyjwt[crypto]
