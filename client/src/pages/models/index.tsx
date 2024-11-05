@@ -18,15 +18,15 @@ import { DashboardContent } from 'src/layouts/dashboard';
 
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
+import { TableEmptyRows, TableNoData } from 'src/components/table';
 
-import { TableNoData } from './components/table-no-data';
 import { ModelTableRow } from './components/model-table-row';
 import { ModelTableHead } from './components/model-table-head';
-import { TableEmptyRows } from './components/table-empty-rows';
 import { ModelTableToolbar } from './components/model-table-toolbar';
 import { emptyRows, applyFilter, getComparator } from './components/utils';
 
 import type { ModelProps } from './components/model-table-row';
+
 // ----------------------------------------------------------------------
 
 export default function Model() {

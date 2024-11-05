@@ -16,15 +16,15 @@ import { CONFIG } from 'src/config-global';
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { Scrollbar } from 'src/components/scrollbar';
+import { TableEmptyRows, TableNoData } from 'src/components/table';
 
-import { TableNoData } from './components/table-no-data';
 import { ScoreTableRow } from './components/score-table-row';
 import { ScoreTableHead } from './components/score-table-head';
-import { TableEmptyRows } from './components/table-empty-rows';
 import { ScoreTableToolbar } from './components/score-table-toolbar';
 import { emptyRows, applyFilter, getComparator } from './components/utils';
 
-import type { ModelProps } from './components/score-table-row';
+import type { PredictProps } from './components/score-table-row';
+
 // ----------------------------------------------------------------------
 
 export default function ScoreHistory() {
@@ -32,7 +32,7 @@ export default function ScoreHistory() {
 
   const [filterName, setFilterName] = useState('');
 
-  const dataFiltered: ModelProps[] = applyFilter({
+  const dataFiltered: PredictProps[] = applyFilter({
     inputData: _scoreHistory,
     comparator: getComparator(table.order, table.orderBy),
     filterName,

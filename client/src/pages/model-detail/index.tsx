@@ -1,91 +1,53 @@
-import type { ChangeEvent } from 'react';
-
 import { Helmet } from 'react-helmet-async';
-import {
-  Modal,
-  Divider,
-  Tooltip,
-  Progress,
-  ModalBody,
-  ModalContent,
-  useDisclosure,
-  CircularProgress,
-} from '@nextui-org/react';
+import { useCallback, useState } from 'react';
 
 import {
   Box,
-  Grid,
   Card,
-  alpha,
-  Input,
-  Button,
-  useTheme,
+  Grid,
+  Table,
+  TableBody,
+  TableContainer,
+  TablePagination,
   Typography,
-  CardContent,
 } from '@mui/material';
 
+import { _scoreHistory } from 'src/_mock';
 import { CONFIG } from 'src/config-global';
 import { DashboardContent } from 'src/layouts/dashboard';
 
-import { Iconify } from 'src/components/iconify';
-import { Chart, useChart, ChartLegends } from 'src/components/chart';
+import { Scrollbar } from 'src/components/scrollbar';
+import { TableEmptyRows, TableNoData } from 'src/components/table';
+
+import PredictBox from './components/predict-box';
+import MoreAction from './components/more-action';
+import CutoffBox from './components/cutoff-selection/cutoff-box';
+import StatisticBox from './components/statistic-model/statistic-box';
+import {
+  applyFilter,
+  emptyRows,
+  getComparator,
+  ScoreTableHead,
+  ScoreTableRow,
+  ScoreTableToolbar,
+} from './components/table';
+
+import type { PredictProps } from './components/table/score-table-row';
 
 // ----------------------------------------------------------------------
 
 export default function ModelDetail() {
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const table = useTable();
 
-  const onUploadFile = (e: ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const file = (e.target as HTMLInputElement).files?.[0];
-    const formData = new FormData();
-    if (file) {
-      formData.append('file', file);
-    }
-  };
+  const [filterName, setFilterName] = useState('');
 
-  const theme = useTheme();
-
-  const chart = {
-    categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
-    series: [
-      { name: 'Good', data: [43, 33, 22, 37, 67, 68, 37, 24, 55] },
-      { name: 'Bad', data: [51, 70, 47, 67, 40, 37, 24, 70, 24] },
-    ],
-  };
-
-  const chartColors = [theme.palette.primary.dark, alpha(theme.palette.primary.light, 0.64)];
-
-  const chartOptions = useChart({
-    colors: chartColors,
-    stroke: {
-      width: 2,
-    },
-    labels: chart.series.map((item) => item.name),
-    grid: { show: false },
-    xaxis: {
-      categories: chart.categories,
-      axisBorder: { show: true },
-      axisTicks: { show: true },
-      title: { text: 'Month', style: { fontSize: '14px', fontWeight: 400 } },
-    },
-    yaxis: {
-      axisBorder: { show: true },
-      axisTicks: { show: true },
-      title: { text: 'Density', style: { fontSize: '14px', fontWeight: 400 } },
-    },
-    // legend: {
-    //   show: true,
-    //   floating: true,
-    //   position: 'left',
-    //   offsetX: -160,
-    // },
-    // tooltip: {
-    //   y: {
-    //     formatter: (value: number) => `${value} visits`,
-    //   },
-    // },
+  const dataFiltered: PredictProps[] = applyFilter({
+    inputData: _scoreHistory,
+    comparator: getComparator(table.order, table.orderBy),
+    filterName,
   });
+
+  const notFound = !dataFiltered.length && !!filterName;
 
   return (
     <>
@@ -98,211 +60,33 @@ export default function ModelDetail() {
       <DashboardContent>
         <Typography variant="h4">credits_data_gm</Typography>
 
-        <Grid container spacing={3} sx={{ mt: 3 }}>
+        <Box display="flex" justifyContent="flex-end" sx={{ mt: 3, mb: 1 }}>
+          <MoreAction
+            options={[
+              { icon: 'solar:map-arrow-right-outline', value: 'export', label: 'Export' },
+              { icon: 'solar:trash-bin-trash-bold', value: 'delete', label: 'Delete' },
+              { icon: 'solar:star-outline', value: 'addFavorite', label: 'Add to favorite' },
+              { icon: 'solar:pen-bold', value: 'editName', label: 'Edit name' },
+              {
+                icon: 'solar:download-minimalistic-outline',
+                value: 'download',
+                label: 'Download report',
+              },
+            ]}
+          />
+        </Box>
+
+        <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
-            <Card>
-              <CardContent>
-                <Box sx={{ display: 'flex' }}>
-                  <Box sx={{ mr: 4 }}>
-                    <Typography variant="h6" mb={2}>
-                      Score Index
-                    </Typography>
-                    <CircularProgress
-                      aria-label="score"
-                      size="lg"
-                      value={70}
-                      color="primary"
-                      valueLabel={0.7}
-                      showValueLabel
-                      classNames={{
-                        svg: 'w-36 h-36 stroke-1',
-                        // indicator: 'stroke-white',
-                        // track: 'stroke-white/10',
-                        value: 'text-3xl font-semibold',
-                      }}
-                    />
-                  </Box>
-
-                  <Box sx={{ flex: 1, '& p': { color: 'text.secondary' } }}>
-                    <Typography variant="h6" mb={3}>
-                      Dataset statistics
-                    </Typography>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Box sx={{ width: '49%' }}>
-                        <Typography variant="h6">1000</Typography>
-                        <Typography variant="body2">Total records count</Typography>
-                      </Box>
-                      <Box sx={{ width: '49%' }}>
-                        <Typography variant="h6">300</Typography>
-                        <Typography variant="body2">Test records count</Typography>
-                      </Box>
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-                      <Box sx={{ width: '49%' }}>
-                        <Typography variant="h6">91.0%</Typography>
-                        <Typography variant="body2">Marked as good</Typography>
-                      </Box>
-                      <Box sx={{ width: '49%' }}>
-                        <Typography variant="h6">9.0%</Typography>
-                        <Typography variant="body2">Marked as bad</Typography>
-                      </Box>
-                    </Box>
-                  </Box>
-                </Box>
-
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    mt: 2,
-                  }}
-                >
-                  <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button variant="contained">Rebuild 70/30</Button>
-                    <Button variant="contained">Rebuild 90/10</Button>
-                  </Box>
-
-                  <Typography
-                    variant="body2"
-                    onClick={onOpen}
-                    sx={{
-                      color: 'primary.main',
-                      cursor: 'pointer',
-                      '&:hover': { textDecoration: 'underline' },
-                    }}
-                  >
-                    Model detail
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
+            <StatisticBox />
           </Grid>
 
           <Grid item xs={6} md={3}>
-            <Card sx={{ pb: '6px' }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', '& > :nth-of-type(2)': { color: 'grey.700' } }}>
-                  <Typography variant="h6">Cutoff selection</Typography>
-                  <Typography variant="h6" sx={{ ml: 2 }}>
-                    {Number(0.5).toFixed(2)}
-                  </Typography>
-                </Box>
-
-                <Box sx={{ my: 2 }}>
-                  <Progress
-                    size="md"
-                    radius="sm"
-                    classNames={{
-                      base: 'max-w-md',
-                      track: 'drop-shadow-md',
-                      indicator: 'bg-gradient-to-r from-yellow-100 to-green-500',
-                    }}
-                    aria-label="cutoff selection"
-                    value={50}
-                  />
-                </Box>
-
-                <Box sx={{ color: 'text.secondary' }}>
-                  <Typography variant="body2" component="span" sx={{ mr: 1 }}>
-                    Total applications count: 300
-                  </Typography>
-                  <Tooltip
-                    className="max-w-48"
-                    placement="bottom-start"
-                    closeDelay={200}
-                    content="Total number of records Machine sets aside to validate the quality of the model and calculate the Score Index"
-                  >
-                    <Iconify width={14} icon="eva:question-mark-circle-outline" />
-                  </Tooltip>
-                </Box>
-
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    '& > div': {
-                      '& > :first-child': { mt: 1, mb: 0.5 },
-                      '& > :not(:first-child)': { color: 'text.secondary', lineHeight: 1 },
-                    },
-                  }}
-                >
-                  <Box sx={{ width: '49%' }}>
-                    <Typography variant="h6">295</Typography>
-                    <Typography variant="body2">to be approved</Typography>
-                    <Typography variant="body2" component="span" sx={{ mr: 1 }}>
-                      297 / 22
-                    </Typography>
-                    <Tooltip
-                      className="max-w-52"
-                      placement="bottom-start"
-                      content="Ratio of correctly approved to incorrectly approved"
-                    >
-                      <Iconify width={14} icon="eva:question-mark-circle-outline" />
-                    </Tooltip>
-                  </Box>
-                  <Box sx={{ width: '49%' }}>
-                    <Typography variant="h6">5</Typography>
-                    <Typography variant="body2">to be rejected</Typography>
-                    <Typography variant="body2" component="span" sx={{ mr: 1 }}>
-                      5 / 0
-                    </Typography>
-                    <Tooltip
-                      className="max-w-52"
-                      placement="bottom-start"
-                      content="Ratio of correctly refused to incorrectly refused"
-                    >
-                      <Iconify width={14} icon="eva:question-mark-circle-outline" />
-                    </Tooltip>
-                  </Box>
-                </Box>
-
-                <Box sx={{ mt: '37px' }}>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: 'primary.main',
-                      cursor: 'pointer',
-                      '&:hover': { textDecoration: 'underline' },
-                    }}
-                  >
-                    How it works
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
+            <CutoffBox />
           </Grid>
 
           <Grid item xs={6} md={3}>
-            <Card>
-              <CardContent sx={{ textAlign: 'center' }}>
-                <Typography variant="h6" sx={{ mb: 3 }}>
-                  Start Predicting
-                </Typography>
-
-                <Box sx={{ mt: 9, mb: 4 }}>
-                  <form onSubmit={(e) => e.preventDefault()}>
-                    {/* <input type="hidden" name='_csrf' /> */}
-                    <Button
-                      component="label"
-                      variant="contained"
-                      fullWidth
-                      size="large"
-                      sx={{ fontSize: 16, maxWidth: 200 }}
-                    >
-                      Upload Data
-                      <Input type="file" onChange={onUploadFile} sx={{ display: 'none' }} />
-                    </Button>
-
-                    <Typography variant="body2" sx={{ mt: 2, color: 'text.secondary' }}>
-                      or drag and drop a file
-                      <br />
-                      xlsx or tab-delimited csv only
-                    </Typography>
-                  </form>
-                </Box>
-              </CardContent>
-            </Card>
+            <PredictBox />
           </Grid>
         </Grid>
 
@@ -336,167 +120,148 @@ export default function ModelDetail() {
           </Box>
         </Box>
 
-        <Box sx={{ mt: 6 }}>
+        <Box sx={{ mt: 6, mb: 2 }}>
           <Typography variant="h4">Calculation history</Typography>
         </Box>
 
-        <Modal
-          isOpen={isOpen}
-          onOpenChange={onOpenChange}
-          className="max-w-6xl"
-          scrollBehavior="outside"
-        >
-          <ModalContent>
-            {(onClose) => (
-              <ModalBody className="p-8">
-                <Typography variant="h4">credits_data_gm</Typography>
-                <Box sx={{ display: 'flex' }}>
-                  <Typography>
-                    credits_data_gm.xlsx by mmnhat666@gmail.com , 18 October 2024 05:10:20
-                  </Typography>
-                  <Typography sx={{ ml: 4 }}>Time taken 8.57 s.</Typography>
-                </Box>
-                <Button variant="contained" size="large" sx={{ width: 300 }}>
-                  Download evaluation report
-                </Button>
+        <Card>
+          <ScoreTableToolbar
+            numSelected={table.selected.length}
+            filterName={filterName}
+            onFilterName={(event: React.ChangeEvent<HTMLInputElement>) => {
+              setFilterName(event.target.value);
+              table.onResetPage();
+            }}
+          />
 
-                <Card sx={{ bgcolor: 'background.neutral', mt: 4 }}>
-                  <CardContent sx={{ '& p': { color: 'text.secondary' } }}>
-                    <Box sx={{ p: 2, pb: 3 }}>
-                      <Typography variant="h5">Model overview</Typography>
-
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-                        <Box>
-                          <Typography variant="h6">1000</Typography>
-                          <Typography variant="body2">Total records count</Typography>
-                        </Box>
-                        <Box>
-                          <Typography variant="h6">25 columns</Typography>
-                          <Typography variant="body2">Target column: ok</Typography>
-                        </Box>
-                        <Box>
-                          <Typography variant="h6">300</Typography>
-                          <Typography variant="body2">Test records count</Typography>
-                        </Box>
-                        <Box>
-                          <Typography variant="h6">91.0%</Typography>
-                          <Typography variant="body2">Marked as good</Typography>
-                        </Box>
-                        <Box>
-                          <Typography variant="h6">9.0%</Typography>
-                          <Typography variant="body2">Mark as bad</Typography>
-                        </Box>
-                        <Box>
-                          <Typography variant="h6">9.00%</Typography>
-                          <Typography variant="body2">NLP by source data</Typography>
-                        </Box>
-                      </Box>
-                    </Box>
-
-                    <Divider />
-
-                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                      <CircularProgress
-                        aria-label="score"
-                        size="lg"
-                        value={70}
-                        color="primary"
-                        valueLabel={
-                          <Box sx={{ textAlign: 'center', '& span, & p': { lineHeight: 1 } }}>
-                            <Typography component="span" sx={{ fontSize: '2rem' }}>
-                              0.70
-                            </Typography>
-                            <Typography variant="body2">Score Index</Typography>
-                          </Box>
-                        }
-                        showValueLabel
-                        classNames={{
-                          svg: 'w-36 h-36 stroke-1',
-                          value: 'text-3xl font-semibold',
-                        }}
+          <Scrollbar>
+            <TableContainer sx={{ overflow: 'unset' }}>
+              <Table sx={{ minWidth: 800 }}>
+                <ScoreTableHead
+                  order={table.order}
+                  orderBy={table.orderBy}
+                  rowCount={_scoreHistory.length}
+                  numSelected={table.selected.length}
+                  onSort={table.onSort}
+                  onSelectAllRows={(checked) =>
+                    table.onSelectAllRows(
+                      checked,
+                      _scoreHistory.map((user) => user.id)
+                    )
+                  }
+                  headLabel={[
+                    { id: 'name', label: 'Name' },
+                    { id: 'quantity', label: 'Quantity' },
+                    { id: 'index', label: 'Index' },
+                    { id: 'model', label: 'Model' },
+                    { id: 'finished', label: 'Finished', align: 'center' },
+                    { id: 'createdAt', label: 'Created At' },
+                    { id: '' },
+                  ]}
+                />
+                <TableBody>
+                  {dataFiltered
+                    .slice(
+                      table.page * table.rowsPerPage,
+                      table.page * table.rowsPerPage + table.rowsPerPage
+                    )
+                    .map((row) => (
+                      <ScoreTableRow
+                        key={row.id}
+                        row={row}
+                        selected={table.selected.includes(row.id)}
+                        onSelectRow={() => table.onSelectRow(row.id)}
                       />
-                      <CircularProgress
-                        aria-label="roc aug"
-                        size="lg"
-                        value={85}
-                        color="primary"
-                        valueLabel={
-                          <Box sx={{ textAlign: 'center', '& span, & p': { lineHeight: 1 } }}>
-                            <Typography component="span" sx={{ fontSize: '2rem' }}>
-                              0.85
-                            </Typography>
-                            <Typography variant="body2">ROC AUG</Typography>
-                          </Box>
-                        }
-                        showValueLabel
-                        classNames={{
-                          svg: 'w-36 h-36 stroke-1',
-                          value: 'text-3xl font-semibold',
-                        }}
-                      />
-                      <CircularProgress
-                        aria-label="k-s score"
-                        size="lg"
-                        value={58}
-                        color="primary"
-                        valueLabel={
-                          <Box sx={{ textAlign: 'center', '& span, & p': { lineHeight: 1 } }}>
-                            <Typography component="span" sx={{ fontSize: '2rem' }}>
-                              0.58
-                            </Typography>
-                            <Typography variant="body2">K-S Score</Typography>
-                          </Box>
-                        }
-                        showValueLabel
-                        classNames={{
-                          svg: 'w-36 h-36 stroke-1',
-                          value: 'text-3xl font-semibold',
-                        }}
-                      />
-                    </Box>
-                  </CardContent>
-                </Card>
+                    ))}
 
-                <Box>
-                  <Box>
-                    <Typography variant="h5">Dataset statistics</Typography>
+                  <TableEmptyRows
+                    height={68}
+                    emptyRows={emptyRows(table.page, table.rowsPerPage, _scoreHistory.length)}
+                  />
 
-                    <Box sx={{ display: 'flex' }}>
-                      <Box sx={{ mt: 8 }}>
-                        <Typography sx={{ fontSize: '32px', fontWeight: 700 }}>
-                          Density distribution by classes
-                        </Typography>
+                  {notFound && <TableNoData searchQuery={filterName} />}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Scrollbar>
 
-                        <ChartLegends
-                          labels={chartOptions?.labels}
-                          colors={chartOptions?.colors}
-                          sx={{ py: 3 }}
-                        />
-                      </Box>
-
-                      <Chart
-                        type="line"
-                        series={chart.series}
-                        options={chartOptions}
-                        width={760}
-                        height={400}
-                        sx={{
-                          py: 2.5,
-                          pl: 1,
-                          pr: 2.5,
-                          '& svg, & foreignObject': {
-                            overflow: 'visible',
-                          },
-                        }}
-                      />
-                    </Box>
-                  </Box>
-                </Box>
-              </ModalBody>
-            )}
-          </ModalContent>
-        </Modal>
+          <TablePagination
+            component="div"
+            page={table.page}
+            count={_scoreHistory.length}
+            rowsPerPage={table.rowsPerPage}
+            onPageChange={table.onChangePage}
+            rowsPerPageOptions={[5, 10, 25]}
+            onRowsPerPageChange={table.onChangeRowsPerPage}
+          />
+        </Card>
       </DashboardContent>
     </>
   );
+}
+
+export function useTable() {
+  const [page, setPage] = useState(0);
+  const [orderBy, setOrderBy] = useState('createdAt');
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [order, setOrder] = useState<'asc' | 'desc'>('desc');
+
+  const onSort = useCallback(
+    (id: string) => {
+      const isAsc = orderBy === id && order === 'asc';
+      setOrder(isAsc ? 'desc' : 'asc');
+      setOrderBy(id);
+    },
+    [order, orderBy]
+  );
+
+  const onSelectAllRows = useCallback((checked: boolean, newSelecteds: string[]) => {
+    if (checked) {
+      setSelected(newSelecteds);
+      return;
+    }
+    setSelected([]);
+  }, []);
+
+  const onSelectRow = useCallback(
+    (inputValue: string) => {
+      const newSelected = selected.includes(inputValue)
+        ? selected.filter((value) => value !== inputValue)
+        : [...selected, inputValue];
+
+      setSelected(newSelected);
+    },
+    [selected]
+  );
+
+  const onResetPage = useCallback(() => {
+    setPage(0);
+  }, []);
+
+  const onChangePage = useCallback((event: unknown, newPage: number) => {
+    setPage(newPage);
+  }, []);
+
+  const onChangeRowsPerPage = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setRowsPerPage(parseInt(event.target.value, 10));
+      onResetPage();
+    },
+    [onResetPage]
+  );
+
+  return {
+    page,
+    order,
+    onSort,
+    orderBy,
+    selected,
+    rowsPerPage,
+    onSelectRow,
+    onResetPage,
+    onChangePage,
+    onSelectAllRows,
+    onChangeRowsPerPage,
+  };
 }

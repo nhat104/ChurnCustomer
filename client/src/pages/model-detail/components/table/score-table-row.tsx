@@ -12,8 +12,6 @@ import {
   Typography,
 } from '@mui/material';
 
-import { useRouter } from 'src/routes/hooks';
-
 import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
@@ -38,7 +36,6 @@ type ScoreTableRowProps = {
 };
 
 export function ScoreTableRow({ row, selected, onSelectRow }: ScoreTableRowProps) {
-  const router = useRouter();
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
 
   const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
@@ -48,10 +45,6 @@ export function ScoreTableRow({ row, selected, onSelectRow }: ScoreTableRowProps
   const handleClosePopover = useCallback(() => {
     setOpenPopover(null);
   }, []);
-
-  const handleDetailScore = useCallback(() => {
-    router.push(`/scoring/${row.id}`);
-  }, [router, row.id]);
 
   return (
     <>
@@ -129,10 +122,10 @@ export function ScoreTableRow({ row, selected, onSelectRow }: ScoreTableRowProps
             },
           }}
         >
-          <MenuItem onClick={handleDetailScore}>
-            <Iconify icon="akar-icons:statistic-up" />
-            Show
-          </MenuItem>
+          {/* <MenuItem onClick={handleClosePopover}>
+            <Iconify icon="fluent:predictions-20-filled" />
+            Start Predicting
+          </MenuItem> */}
 
           <MenuItem onClick={handleClosePopover} sx={{ color: 'error.main' }}>
             <Iconify icon="solar:trash-bin-trash-bold" />

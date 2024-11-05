@@ -46,6 +46,12 @@ export const _scoreHistory = [...Array(24)].map((_, index) => ({
   createdAt: _times(index),
 }));
 
+export const _predicts = [...Array(24)].map((_, index) => ({
+  id: _id(index),
+  score: Number(Math.random() * 0.2 + 0.8).toFixed(5),
+  decision: 'Approve',
+}));
+
 // ----------------------------------------------------------------------
 
 export const _posts = [...Array(23)].map((_, index) => ({
