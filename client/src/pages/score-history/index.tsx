@@ -1,5 +1,5 @@
 import { Helmet } from 'react-helmet-async';
-import { useState, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 
 import {
   Box,
@@ -11,32 +11,47 @@ import {
   TablePagination,
 } from '@mui/material';
 
-import { _scoreHistory } from 'src/_mock';
 import { CONFIG } from 'src/config-global';
 import { DashboardContent } from 'src/layouts/dashboard';
+import { useAppDispatch, useAppSelector } from 'src/store/hooks';
 
+import { Loading } from 'src/components/loading';
 import { Scrollbar } from 'src/components/scrollbar';
-import { TableEmptyRows, TableNoData } from 'src/components/table';
+import {
+  TableEmptyRows,
+  TableNoData,
+  emptyRows,
+  applyFilter,
+  getComparator,
+  useTable,
+} from 'src/components/table';
 
-import { ScoreTableRow } from './components/score-table-row';
-import { ScoreTableHead } from './components/score-table-head';
-import { ScoreTableToolbar } from './components/score-table-toolbar';
-import { emptyRows, applyFilter, getComparator } from './components/utils';
+import { scoreHistoryActionss } from './slice';
+import { selectScoreHistory } from './slice/selectors';
+import { ScoreTableRow } from './components/table/score-table-row';
+import { ScoreTableHead } from './components/table/score-table-head';
+import { ScoreTableToolbar } from './components/table/score-table-toolbar';
 
-import type { PredictProps } from './components/score-table-row';
+import type { ScoreHistoryResponse } from './slice/types';
 
 // ----------------------------------------------------------------------
 
 export default function ScoreHistory() {
-  const table = useTable();
-
+  const table = useTable<ScoreHistoryResponse>({ _orderBy: 'created_at' });
   const [filterName, setFilterName] = useState('');
 
-  const dataFiltered: PredictProps[] = applyFilter({
-    inputData: _scoreHistory,
+  const { loading, dataScoreHistories } = useAppSelector(selectScoreHistory);
+  const dispatch = useAppDispatch();
+
+  const dataFiltered = applyFilter({
+    inputData: dataScoreHistories ?? [],
     comparator: getComparator(table.order, table.orderBy),
     filterName,
   });
+
+  useEffect(() => {
+    dispatch(scoreHistoryActionss.scoreHistoriesRequest({ offset: 0, limit: 10 }));
+  }, [dispatch]);
 
   const notFound = !dataFiltered.length && !!filterName;
 
@@ -51,144 +66,86 @@ export default function ScoreHistory() {
           <Typography variant="h4">Predicting history</Typography>
         </Box>
 
-        <Card>
-          <ScoreTableToolbar
-            numSelected={table.selected.length}
-            filterName={filterName}
-            onFilterName={(event: React.ChangeEvent<HTMLInputElement>) => {
-              setFilterName(event.target.value);
-              table.onResetPage();
-            }}
-          />
+        {dataScoreHistories ? (
+          <Card>
+            <ScoreTableToolbar
+              numSelected={table.selected.length}
+              filterName={filterName}
+              onFilterName={(event: React.ChangeEvent<HTMLInputElement>) => {
+                setFilterName(event.target.value);
+                table.onResetPage();
+              }}
+            />
 
-          <Scrollbar>
-            <TableContainer sx={{ overflow: 'unset' }}>
-              <Table sx={{ minWidth: 800 }}>
-                <ScoreTableHead
-                  order={table.order}
-                  orderBy={table.orderBy}
-                  rowCount={_scoreHistory.length}
-                  numSelected={table.selected.length}
-                  onSort={table.onSort}
-                  onSelectAllRows={(checked) =>
-                    table.onSelectAllRows(
-                      checked,
-                      _scoreHistory.map((user) => user.id)
-                    )
-                  }
-                  headLabel={[
-                    { id: 'name', label: 'Name' },
-                    { id: 'quantity', label: 'Quantity' },
-                    { id: 'index', label: 'Index' },
-                    { id: 'model', label: 'Model' },
-                    { id: 'finished', label: 'Finished', align: 'center' },
-                    { id: 'createdAt', label: 'Created At' },
-                    { id: '' },
-                  ]}
-                />
-                <TableBody>
-                  {dataFiltered
-                    .slice(
-                      table.page * table.rowsPerPage,
-                      table.page * table.rowsPerPage + table.rowsPerPage
-                    )
-                    .map((row) => (
-                      <ScoreTableRow
-                        key={row.id}
-                        row={row}
-                        selected={table.selected.includes(row.id)}
-                        onSelectRow={() => table.onSelectRow(row.id)}
-                      />
-                    ))}
-
-                  <TableEmptyRows
-                    height={68}
-                    emptyRows={emptyRows(table.page, table.rowsPerPage, _scoreHistory.length)}
+            <Scrollbar>
+              <TableContainer sx={{ overflow: 'unset' }}>
+                <Table sx={{ minWidth: 800 }}>
+                  <ScoreTableHead
+                    order={table.order}
+                    orderBy={table.orderBy}
+                    rowCount={dataScoreHistories.length}
+                    numSelected={table.selected.length}
+                    onSort={table.onSort}
+                    onSelectAllRows={(checked) =>
+                      table.onSelectAllRows(
+                        checked,
+                        dataScoreHistories.map((user) => user.id)
+                      )
+                    }
+                    headLabel={[
+                      { id: 'name', label: 'Name' },
+                      { id: 'number_approve', label: 'Quantity' },
+                      { id: 'predictive_power', label: 'Power' },
+                      { id: 'ml_model', label: 'Model' },
+                      { id: 'status', label: 'Finished', align: 'center' },
+                      { id: 'created_at', label: 'Created At' },
+                      { id: '' },
+                    ]}
                   />
+                  <TableBody>
+                    {dataFiltered
+                      .slice(
+                        table.page * table.rowsPerPage,
+                        table.page * table.rowsPerPage + table.rowsPerPage
+                      )
+                      .map((row) => (
+                        <ScoreTableRow
+                          key={row.id}
+                          row={row}
+                          selected={table.selected.includes(row.id)}
+                          onSelectRow={() => table.onSelectRow(row.id)}
+                        />
+                      ))}
 
-                  {notFound && <TableNoData searchQuery={filterName} />}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Scrollbar>
+                    <TableEmptyRows
+                      height={78}
+                      emptyRows={emptyRows(
+                        table.page,
+                        table.rowsPerPage,
+                        dataScoreHistories.length
+                      )}
+                    />
 
-          <TablePagination
-            component="div"
-            page={table.page}
-            count={_scoreHistory.length}
-            rowsPerPage={table.rowsPerPage}
-            onPageChange={table.onChangePage}
-            rowsPerPageOptions={[5, 10, 25]}
-            onRowsPerPageChange={table.onChangeRowsPerPage}
-          />
-        </Card>
+                    {notFound && <TableNoData searchQuery={filterName} />}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Scrollbar>
+
+            <TablePagination
+              component="div"
+              page={table.page}
+              count={dataScoreHistories.length}
+              rowsPerPage={table.rowsPerPage}
+              onPageChange={table.onChangePage}
+              rowsPerPageOptions={[5, 10, 25]}
+              onRowsPerPageChange={table.onChangeRowsPerPage}
+            />
+          </Card>
+        ) : (
+          loading && <Loading />
+        )}
       </DashboardContent>
     </>
   );
-}
-
-export function useTable() {
-  const [page, setPage] = useState(0);
-  const [orderBy, setOrderBy] = useState('createdAt');
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [selected, setSelected] = useState<string[]>([]);
-  const [order, setOrder] = useState<'asc' | 'desc'>('desc');
-
-  const onSort = useCallback(
-    (id: string) => {
-      const isAsc = orderBy === id && order === 'asc';
-      setOrder(isAsc ? 'desc' : 'asc');
-      setOrderBy(id);
-    },
-    [order, orderBy]
-  );
-
-  const onSelectAllRows = useCallback((checked: boolean, newSelecteds: string[]) => {
-    if (checked) {
-      setSelected(newSelecteds);
-      return;
-    }
-    setSelected([]);
-  }, []);
-
-  const onSelectRow = useCallback(
-    (inputValue: string) => {
-      const newSelected = selected.includes(inputValue)
-        ? selected.filter((value) => value !== inputValue)
-        : [...selected, inputValue];
-
-      setSelected(newSelected);
-    },
-    [selected]
-  );
-
-  const onResetPage = useCallback(() => {
-    setPage(0);
-  }, []);
-
-  const onChangePage = useCallback((event: unknown, newPage: number) => {
-    setPage(newPage);
-  }, []);
-
-  const onChangeRowsPerPage = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      setRowsPerPage(parseInt(event.target.value, 10));
-      onResetPage();
-    },
-    [onResetPage]
-  );
-
-  return {
-    page,
-    order,
-    onSort,
-    orderBy,
-    selected,
-    rowsPerPage,
-    onSelectRow,
-    onResetPage,
-    onChangePage,
-    onSelectAllRows,
-    onChangeRowsPerPage,
-  };
 }

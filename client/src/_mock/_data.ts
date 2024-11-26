@@ -15,8 +15,8 @@ import {
 // ----------------------------------------------------------------------
 
 export const _myAccount = {
-  displayName: 'Jaydon Frankie',
-  email: 'demo@minimals.cc',
+  displayName: 'Mai Minh Nhat',
+  email: 'nhatmm@gmail.com',
   photoURL: '/assets/images/avatar/avatar-25.webp',
 };
 

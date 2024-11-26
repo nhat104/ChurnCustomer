@@ -1,3 +1,5 @@
+import type { ScoreHistoryResponse } from 'src/pages/score-history/slice/types';
+
 import Box from '@mui/material/Box';
 import TableRow from '@mui/material/TableRow';
 import Checkbox from '@mui/material/Checkbox';
@@ -5,8 +7,7 @@ import TableHead from '@mui/material/TableHead';
 import TableCell from '@mui/material/TableCell';
 import TableSortLabel from '@mui/material/TableSortLabel';
 
-import { visuallyHidden } from './utils';
-
+import { visuallyHidden, type TableHeadLabel } from 'src/components/table';
 // ----------------------------------------------------------------------
 
 type ScoreTableHeadProps = {
@@ -14,8 +15,8 @@ type ScoreTableHeadProps = {
   rowCount: number;
   numSelected: number;
   order: 'asc' | 'desc';
-  onSort: (id: string) => void;
-  headLabel: Record<string, any>[];
+  onSort: (id: keyof ScoreHistoryResponse) => void;
+  headLabel: TableHeadLabel<ScoreHistoryResponse>[];
   onSelectAllRows: (checked: boolean) => void;
 };
 
@@ -52,7 +53,7 @@ export function ScoreTableHead({
               hideSortIcon
               active={orderBy === headCell.id}
               direction={orderBy === headCell.id ? order : 'asc'}
-              onClick={() => onSort(headCell.id)}
+              onClick={() => onSort(headCell.id as keyof ScoreHistoryResponse)}
             >
               {headCell.label}
               {orderBy === headCell.id ? (

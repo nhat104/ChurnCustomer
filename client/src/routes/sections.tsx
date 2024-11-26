@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, type ReactElement } from 'react';
 import { Outlet, Navigate, useRoutes } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
@@ -6,7 +6,9 @@ import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgr
 
 import { varAlpha } from 'src/theme/styles';
 import { AuthLayout } from 'src/layouts/auth';
+import { useAppSelector } from 'src/store/hooks';
 import { DashboardLayout } from 'src/layouts/dashboard';
+import { selectLogin } from 'src/pages/sign-in/slice/selectors';
 
 // ----------------------------------------------------------------------
 
@@ -18,7 +20,6 @@ export const ScoreDetailPage = lazy(() => import('src/pages/score-detail'));
 export const MonitoringPage = lazy(() => import('src/pages/monitoring'));
 export const HomePage = lazy(() => import('src/pages/home'));
 export const BlogPage = lazy(() => import('src/pages/blog'));
-export const UserPage = lazy(() => import('src/pages/user'));
 export const SignInPage = lazy(() => import('src/pages/sign-in'));
 export const ProductsPage = lazy(() => import('src/pages/products'));
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
@@ -38,15 +39,28 @@ const renderFallback = (
   </Box>
 );
 
+const AuthRoute = (props: { type: 'PUBLIC' | 'PRIVATE'; children: ReactElement }) => {
+  const { type, children } = props;
+  const { dataAuth } = useAppSelector(selectLogin);
+
+  if (type === 'PRIVATE' && !dataAuth?.access_token) {
+    return <Navigate to="/sign-in" />;
+  }
+
+  return children;
+};
+
 export function Router() {
   return useRoutes([
     {
       element: (
-        <DashboardLayout>
-          <Suspense fallback={renderFallback}>
-            <Outlet />
-          </Suspense>
-        </DashboardLayout>
+        <AuthRoute type="PRIVATE">
+          <DashboardLayout>
+            <Suspense fallback={renderFallback}>
+              <Outlet />
+            </Suspense>
+          </DashboardLayout>
+        </AuthRoute>
       ),
       children: [
         { element: <DashboardPage />, index: true },
@@ -66,7 +80,6 @@ export function Router() {
         },
         { path: 'monitoring', element: <MonitoringPage /> },
         { path: 'home', element: <HomePage /> },
-        { path: 'user', element: <UserPage /> },
         { path: 'products', element: <ProductsPage /> },
         { path: 'blog', element: <BlogPage /> },
       ],

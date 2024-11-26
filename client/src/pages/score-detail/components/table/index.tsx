@@ -1,7 +1,7 @@
 export * from './utils';
 
-export { ScoreTableRow } from './score-table-row';
+export { ScoreTableRow } from './score-result-row';
 
-export { ScoreTableHead } from './score-table-head';
+export { ScoreTableHead } from './score-result-head';
 
-export { ScoreTableToolbar } from './score-table-toolbar';
+export { ScoreTableToolbar } from './score-result-toolbar';

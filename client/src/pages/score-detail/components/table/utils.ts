@@ -1,4 +1,4 @@
-import type { PredictProps } from './score-table-row';
+import type { ScoreResultResponse } from '../../slice/types';
 
 // ----------------------------------------------------------------------
 
@@ -53,7 +53,7 @@ export function getComparator<Key extends keyof any>(
 // ----------------------------------------------------------------------
 
 type ApplyFilterProps = {
-  inputData: PredictProps[];
+  inputData: ScoreResultResponse[];
   filterName?: string;
   comparator: (a: any, b: any) => number;
 };
@@ -68,12 +68,6 @@ export function applyFilter({ inputData, comparator, filterName = '' }: ApplyFil
   });
 
   inputData = stabilizedThis.map((el) => el[0]);
-
-  // if (filterName) {
-  //   inputData = inputData.filter(
-  //     (user) => user.name.toLowerCase().indexOf(filterName.toLowerCase()) !== -1
-  //   );
-  // }
 
   return inputData;
 }

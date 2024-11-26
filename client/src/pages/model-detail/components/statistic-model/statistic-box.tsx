@@ -2,12 +2,16 @@ import { CircularProgress, useDisclosure } from '@nextui-org/react';
 
 import { Box, Button, Card, CardContent, Typography } from '@mui/material';
 
+import { useAppSelector } from 'src/store/hooks';
+
 import StatisticModal from './modal';
+import { selectModel } from '../../slice/selectors';
 
 // ----------------------------------------------------------------------
 
 export default function StatisticBox() {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const { dataModel } = useAppSelector(selectModel);
 
   return (
     <>
@@ -16,14 +20,14 @@ export default function StatisticBox() {
           <Box sx={{ display: 'flex' }}>
             <Box sx={{ mr: 4 }}>
               <Typography variant="h6" mb={2}>
-                Score Index
+                Predictive Power
               </Typography>
               <CircularProgress
                 aria-label="score"
                 size="lg"
-                value={70}
+                value={(dataModel?.predictive_power ?? 0) * 100}
                 color="primary"
-                valueLabel={0.7}
+                valueLabel={dataModel?.predictive_power}
                 showValueLabel
                 classNames={{
                   svg: 'w-36 h-36 stroke-1',

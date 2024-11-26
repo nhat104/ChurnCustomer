@@ -1,15 +1,13 @@
-import baseApiRequest from "./baseApiRequest"
+import baseApiRequest from './baseApiRequest';
 
-const authApi = {
+export const authApi = {
   login(body: unknown) {
-    const url = "login"
-    return baseApiRequest.post(url, body)
+    const url = 'auth/login';
+    return baseApiRequest.post(url, body);
   },
 
   logout() {
-    const url = "logout"
-    return baseApiRequest.get(url)
+    const url = 'logout';
+    return baseApiRequest.get(url);
   },
-}
-
-export default authApi
+};

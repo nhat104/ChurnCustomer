@@ -4,18 +4,25 @@ import { useRef } from 'react';
 
 import { Box, Card, Input, Button, Typography, CardContent, OutlinedInput } from '@mui/material';
 
+import { useAppDispatch } from 'src/store/hooks';
+
+import { dashboardActions } from '../slice';
+
 // ----------------------------------------------------------------------
 
 export default function BuildModelBox() {
   const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const dispatch = useAppDispatch();
 
   const onUploadFile = (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     const fileData = (e.target as HTMLInputElement).files?.[0];
     const formData = new FormData();
     if (fileData) {
-      formData.append('file', fileData);
+      formData.append('data_file', fileData);
       inputRef.current!.value = fileData.name.split('.').slice(0, -1).join('.');
+      dispatch(dashboardActions.uploadDataRequest(formData));
     }
   };
 
@@ -31,6 +38,9 @@ export default function BuildModelBox() {
         newFile.type === 'text/csv'
       ) {
         inputRef.current!.value = newFile.name.split('.').slice(0, -1).join('.');
+        const formData = new FormData();
+        formData.append('data_file', newFile);
+        dispatch(dashboardActions.uploadDataRequest(formData));
       } else {
         console.error('Invalid file type');
       }

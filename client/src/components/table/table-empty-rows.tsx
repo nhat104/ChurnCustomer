@@ -14,6 +14,7 @@ export function TableEmptyRows({ emptyRows, height, sx, ...other }: TableEmptyRo
   if (!emptyRows) {
     return null;
   }
+  console.log('emptyRows', emptyRows);
 
   return (
     <TableRow

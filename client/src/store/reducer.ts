@@ -1,9 +1,19 @@
 import { combineReducers } from '@reduxjs/toolkit';
 
-import counterReducer from '../pages/Counter/slice';
+import loginReducer from 'src/pages/sign-in/slice';
+import modelsReducer from 'src/pages/models/slice';
+import modelReducer from 'src/pages/model-detail/slice';
+import dashboardReducer from 'src/pages/dashboard/slice';
+import scoreResultReducer from 'src/pages/score-detail/slice';
+import scoreHistoryReducer from 'src/pages/score-history/slice';
 
 const reducer = {
-  counter: counterReducer,
+  login: loginReducer,
+  model: modelReducer,
+  models: modelsReducer,
+  dashboard: dashboardReducer,
+  scoreResult: scoreResultReducer,
+  scoreHistory: scoreHistoryReducer,
 };
 
 export const rootReducer = combineReducers(reducer);

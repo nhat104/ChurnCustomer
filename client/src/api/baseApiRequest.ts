@@ -1,14 +1,10 @@
-import type {
-  AxiosError,
-  AxiosInstance,
-  AxiosResponse,
-  InternalAxiosRequestConfig,
-} from 'axios';
+import type { AxiosError, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
 import axios from 'axios';
-// import { store } from "index"
 
-export const baseURL = import.meta.env.REACT_APP_API_URL;
+import { store } from 'src/store';
+
+export const baseURL = import.meta.env.VITE_APP_API_URL;
 
 const baseApiRequest: AxiosInstance = axios.create({
   baseURL,
@@ -19,15 +15,13 @@ const baseApiRequest: AxiosInstance = axios.create({
   },
 });
 
-baseApiRequest.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    const newConfig = { ...config };
-    // const user = localStorage.getItem("user") || "{}"
-    // const access_token = JSON.parse(user)?.token
-    // newConfig.headers["Authorization"] = "Bearer " + access_token
-    return newConfig;
-  },
-);
+baseApiRequest.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  const newConfig = { ...config };
+  const user = localStorage.getItem('user') || '{}';
+  const access_token = JSON.parse(user)?.access_token;
+  newConfig.headers.Authorization = `Bearer ${access_token}`;
+  return newConfig;
+});
 
 baseApiRequest.interceptors.response.use(
   (response: AxiosResponse) => response.data,
@@ -35,10 +29,10 @@ baseApiRequest.interceptors.response.use(
     if (error && error.response && error.response.status === 401) {
       // remove token
       // console.log(error.response.data);
-      // store.dispatch({ type: "login/logout" })
+      store.dispatch({ type: 'login/logout' });
     }
     throw error;
-  },
+  }
 );
 
 export default baseApiRequest;

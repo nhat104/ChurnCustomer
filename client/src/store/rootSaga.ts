@@ -1,9 +1,19 @@
 import { all } from 'redux-saga/effects';
 
-import counterSaga from 'src/pages/Counter/slice/saga';
+import { modelsSaga } from 'src/pages/models/slice/saga';
+import { loginSaga } from 'src/pages/sign-in/slice/saga';
+import { modelSaga } from 'src/pages/model-detail/slice/saga';
+import { dashboardSaga } from 'src/pages/dashboard/slice/saga';
+import { scoreResultSaga } from 'src/pages/score-detail/slice/saga';
+import { scoreHistorySaga } from 'src/pages/score-history/slice/saga';
 
 export default function* rootSaga() {
-  console.log('root Saga');
-
-  yield all([counterSaga()]);
+  yield all([
+    loginSaga(),
+    modelSaga(),
+    modelsSaga(),
+    dashboardSaga(),
+    scoreResultSaga(),
+    scoreHistorySaga(),
+  ]);
 }

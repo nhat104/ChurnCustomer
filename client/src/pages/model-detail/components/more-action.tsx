@@ -13,6 +13,7 @@ type MoreActionProps = IconButtonProps & {
     icon: string;
     value: string;
     label: string;
+    onClick?: VoidFunction;
   }[];
 };
 
@@ -58,7 +59,13 @@ export default function MoreAction({ options, sx, ...other }: MoreActionProps) {
           }}
         >
           {options.map((option) => (
-            <MenuItem key={option.value} onClick={handleClosePopover}>
+            <MenuItem
+              key={option.value}
+              onClick={() => {
+                option.onClick?.();
+                handleClosePopover();
+              }}
+            >
               <Iconify icon={option.icon} />
               {option.label}
             </MenuItem>

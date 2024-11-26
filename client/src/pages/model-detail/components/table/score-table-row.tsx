@@ -1,16 +1,12 @@
+import type { ScoreHistoryResponse } from 'src/pages/score-history/slice/types';
+
 import { useState, useCallback } from 'react';
 
 import IconButton from '@mui/material/IconButton';
 import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
-import {
-  Avatar,
-  Popover,
-  Checkbox,
-  TableRow,
-  MenuList,
-  TableCell,
-  Typography,
-} from '@mui/material';
+import { Popover, Checkbox, TableRow, MenuList, TableCell, Typography } from '@mui/material';
+
+import { useRouter } from 'src/routes/hooks';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -30,12 +26,13 @@ export type PredictProps = {
 };
 
 type ScoreTableRowProps = {
-  row: PredictProps;
+  row: ScoreHistoryResponse;
   selected: boolean;
   onSelectRow: () => void;
 };
 
 export function ScoreTableRow({ row, selected, onSelectRow }: ScoreTableRowProps) {
+  const router = useRouter();
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
 
   const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
@@ -45,6 +42,10 @@ export function ScoreTableRow({ row, selected, onSelectRow }: ScoreTableRowProps
   const handleClosePopover = useCallback(() => {
     setOpenPopover(null);
   }, []);
+
+  const handleDetailScore = useCallback(() => {
+    router.push(`/scoring/${row.id}`);
+  }, [router, row.id]);
 
   return (
     <>
@@ -56,37 +57,28 @@ export function ScoreTableRow({ row, selected, onSelectRow }: ScoreTableRowProps
         <TableCell>{row.name}</TableCell>
 
         <TableCell>
-          {row.noRecord} records
+          {(row.number_approve ?? 0) + (row.number_decline ?? 0)} records
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            3 approve | 2 decline
+            {row.number_approve} approve | {row.number_decline} decline
           </Typography>
-        </TableCell>
-
-        <TableCell component="th" scope="row">
-          <Avatar
-            alt={row.name}
-            sx={{ bgcolor: 'primary.light', width: 46, height: 46, fontSize: 16 }}
-          >
-            {row.index}
-          </Avatar>
         </TableCell>
 
         <TableCell>
           {row.name}
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            Cutoff selection 0.5
+            Cutoff selection {row.ml_model.cutoff_selection}
           </Typography>
         </TableCell>
 
         <TableCell align="center">
-          {row.finished ? (
+          {row.status === 'Finished' ? (
             <Iconify width={22} icon="solar:check-circle-bold" sx={{ color: 'success.main' }} />
           ) : (
             '-'
           )}
         </TableCell>
 
-        <TableCell>{row.createdAt}</TableCell>
+        <TableCell>{row.created_at}</TableCell>
 
         {/* <TableCell>
           <Label color={(row.status === 'banned' && 'error') || 'success'}>{row.status}</Label>
@@ -122,10 +114,10 @@ export function ScoreTableRow({ row, selected, onSelectRow }: ScoreTableRowProps
             },
           }}
         >
-          {/* <MenuItem onClick={handleClosePopover}>
+          <MenuItem onClick={handleDetailScore}>
             <Iconify icon="fluent:predictions-20-filled" />
-            Start Predicting
-          </MenuItem> */}
+            Show
+          </MenuItem>
 
           <MenuItem onClick={handleClosePopover} sx={{ color: 'error.main' }}>
             <Iconify icon="solar:trash-bin-trash-bold" />

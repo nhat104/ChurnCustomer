@@ -9,9 +9,13 @@ import CutoffModal from './cutoff-modal';
 
 // ----------------------------------------------------------------------
 
-export default function CutoffBox() {
+interface CutoffBoxProps {
+  _cutoffValue: number;
+}
+
+export default function CutoffBox({ _cutoffValue }: CutoffBoxProps) {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
-  const [cutoffValue, setCutoffValue] = useState<SliderValue>(0.5);
+  const [cutoffValue, setCutoffValue] = useState<SliderValue>(_cutoffValue);
 
   return (
     <>
