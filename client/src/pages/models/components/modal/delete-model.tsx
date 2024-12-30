@@ -14,7 +14,7 @@ import { modelActions } from 'src/pages/model-detail/slice';
 
 interface DeleteModalProps {
   open: boolean;
-  modelId: number;
+  modelId: number | number[];
   handleClose: () => void;
 }
 
@@ -22,7 +22,13 @@ export function DeleteModel({ open, modelId, handleClose }: DeleteModalProps) {
   const dispatch = useAppDispatch();
 
   const handleConfirmDelete = () => {
-    dispatch(modelActions.deleteModelRequest(modelId));
+    if (Array.isArray(modelId)) {
+      modelId.forEach((id) => {
+        dispatch(modelActions.deleteModelRequest(id));
+      });
+    } else {
+      dispatch(modelActions.deleteModelRequest(modelId));
+    }
     handleClose();
   };
 

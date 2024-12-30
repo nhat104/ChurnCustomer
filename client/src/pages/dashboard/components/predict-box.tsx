@@ -30,7 +30,7 @@ export default function PredictBox() {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    dispatch(modelsActions.modelsRequest({ offset: 0, limit: 10 }));
+    dispatch(modelsActions.modelsRequest({ offset: 0, limit: 100 }));
   }, [dispatch]);
 
   const handleSelectModel = (event: SelectChangeEvent<string>) => {

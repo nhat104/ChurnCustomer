@@ -1,4 +1,4 @@
-import type { ModelResponse } from 'src/pages/models/slice/types';
+import type { ModelDetail } from 'src/pages/model-detail/slice/types';
 import type { ScoreResultResponse } from 'src/pages/score-detail/slice/types';
 
 /* --- STATE --- */
@@ -12,9 +12,9 @@ export interface ScoreHistoryResponse {
   id: number;
   name?: string;
   status?: string;
-  number_approve?: number;
-  number_decline?: number;
-  ml_model: ModelResponse;
+  number_stay?: number;
+  number_exit?: number;
+  ml_model?: ModelDetail;
   score_results: ScoreResultResponse[];
   created_at?: string;
   updated_at?: string;

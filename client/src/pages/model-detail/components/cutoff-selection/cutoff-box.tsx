@@ -1,11 +1,14 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Tooltip, useDisclosure, Slider, type SliderValue } from '@nextui-org/react';
 
 import { Box, Card, Typography, CardContent } from '@mui/material';
 
+import { useAppSelector } from 'src/store/hooks';
+
 import { Iconify } from 'src/components/iconify';
 
 import CutoffModal from './cutoff-modal';
+import { selectModel } from '../../slice/selectors';
 
 // ----------------------------------------------------------------------
 
@@ -13,9 +16,53 @@ interface CutoffBoxProps {
   _cutoffValue: number;
 }
 
+interface ConfusionMatrix {
+  tp: number;
+  tn: number;
+  fp: number;
+  fn: number;
+}
+
 export default function CutoffBox({ _cutoffValue }: CutoffBoxProps) {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [cutoffValue, setCutoffValue] = useState<SliderValue>(_cutoffValue);
+  const [confusionMatrix, setConfusionMatrix] = useState<ConfusionMatrix>({
+    tp: 0,
+    tn: 0,
+    fp: 0,
+    fn: 0,
+  });
+  const { dataModel } = useAppSelector(selectModel);
+
+  useEffect(() => {
+    if (!dataModel || !dataModel.attributes) return;
+    const { y_test, y_pred } = dataModel.attributes;
+    if (!y_test || !y_pred || typeof cutoffValue !== 'number') return;
+
+    let tp = 0;
+    let tn = 0;
+    let fp = 0;
+    let fn = 0;
+    for (let i = 0; i < y_test.length; i += 1) {
+      if (y_pred[i] >= cutoffValue && y_test[i] === 1) {
+        tp += 1;
+      } else if (y_pred[i] >= cutoffValue && y_test[i] === 0) {
+        fp += 1;
+      } else if (y_pred[i] < cutoffValue && y_test[i] === 0) {
+        tn += 1;
+      } else {
+        fn += 1;
+      }
+    }
+
+    setConfusionMatrix({ tp, tn, fp, fn });
+  }, [cutoffValue, dataModel]);
+
+  if (!dataModel) {
+    return null;
+  }
+
+  const { attributes } = dataModel;
 
   return (
     <>
@@ -54,8 +101,8 @@ export default function CutoffBox({ _cutoffValue }: CutoffBoxProps) {
           </Box>
 
           <Box sx={{ color: 'text.secondary' }}>
-            <Typography variant="body2" component="span" sx={{ mr: 1 }}>
-              Total applications count: 300
+            <Typography variant="body2" component="span" sx={{ fontSize: 13, mr: 1 }}>
+              Total applications count: {attributes?.test_records}
             </Typography>
             <Tooltip
               className="max-w-48"
@@ -79,29 +126,29 @@ export default function CutoffBox({ _cutoffValue }: CutoffBoxProps) {
             }}
           >
             <Box sx={{ width: '49%' }}>
-              <Typography variant="h6">295</Typography>
-              <Typography variant="body2">to be approved</Typography>
+              <Typography variant="h6">{confusionMatrix.tp + confusionMatrix.fp}</Typography>
+              <Typography variant="body2">will exit</Typography>
               <Typography variant="body2" component="span" sx={{ mr: 1 }}>
-                297 / 22
+                {confusionMatrix.tp} / {confusionMatrix.fp}
               </Typography>
               <Tooltip
                 className="max-w-52"
                 placement="bottom-start"
-                content="Ratio of correctly approved to incorrectly approved"
+                content="Ratio of correctly exited to incorrectly exited"
               >
                 <Iconify width={14} icon="eva:question-mark-circle-outline" />
               </Tooltip>
             </Box>
             <Box sx={{ width: '49%' }}>
-              <Typography variant="h6">5</Typography>
-              <Typography variant="body2">to be rejected</Typography>
+              <Typography variant="h6">{confusionMatrix.tn + confusionMatrix.fn}</Typography>
+              <Typography variant="body2">will stay</Typography>
               <Typography variant="body2" component="span" sx={{ mr: 1 }}>
-                5 / 0
+                {confusionMatrix.tn} / {confusionMatrix.fn}
               </Typography>
               <Tooltip
                 className="max-w-52"
                 placement="bottom-start"
-                content="Ratio of correctly refused to incorrectly refused"
+                content="Ratio of correctly stayed to incorrectly stayed"
               >
                 <Iconify width={14} icon="eva:question-mark-circle-outline" />
               </Tooltip>

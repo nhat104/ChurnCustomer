@@ -16,7 +16,8 @@ export default function PredictBox() {
 
   const onUploadFile = (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
-    const file = (e.target as HTMLInputElement).files?.[0];
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
     const formData = new FormData();
     if (file && modelId) {
       formData.append('data_file', file);
@@ -27,6 +28,7 @@ export default function PredictBox() {
         })
       );
     }
+    input.value = '';
   };
 
   const handleDrop = (event: DragEvent<HTMLDivElement>) => {

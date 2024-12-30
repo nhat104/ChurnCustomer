@@ -12,6 +12,11 @@ import { selectModel } from '../../slice/selectors';
 export default function StatisticBox() {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const { dataModel } = useAppSelector(selectModel);
+  if (!dataModel) {
+    return null;
+  }
+
+  const { attributes } = dataModel;
 
   return (
     <>
@@ -44,22 +49,22 @@ export default function StatisticBox() {
               </Typography>
               <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <Box sx={{ width: '49%' }}>
-                  <Typography variant="h6">1000</Typography>
+                  <Typography variant="h6">{attributes?.total_records}</Typography>
                   <Typography variant="body2">Total records count</Typography>
                 </Box>
                 <Box sx={{ width: '49%' }}>
-                  <Typography variant="h6">300</Typography>
+                  <Typography variant="h6">{attributes?.test_records}</Typography>
                   <Typography variant="body2">Test records count</Typography>
                 </Box>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
                 <Box sx={{ width: '49%' }}>
-                  <Typography variant="h6">91.0%</Typography>
-                  <Typography variant="body2">Marked as good</Typography>
+                  <Typography variant="h6">{attributes?.exit_percentage}%</Typography>
+                  <Typography variant="body2">Marked as exit</Typography>
                 </Box>
                 <Box sx={{ width: '49%' }}>
-                  <Typography variant="h6">9.0%</Typography>
-                  <Typography variant="body2">Marked as bad</Typography>
+                  <Typography variant="h6">{attributes?.stay_percentage}%</Typography>
+                  <Typography variant="body2">Marked as stay</Typography>
                 </Box>
               </Box>
             </Box>

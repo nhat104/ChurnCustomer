@@ -1,3 +1,5 @@
+import type { ScoreHistoryUpdate } from 'src/pages/score-detail/slice/types';
+
 import baseApiRequest from './baseApiRequest';
 
 import type { QueryParams } from './type';
@@ -18,12 +20,12 @@ export const scoreHistoryApi = {
     return baseApiRequest.post(url, body);
   },
 
-  update(id: string, body: unknown) {
+  update(id: string | number, body: ScoreHistoryUpdate) {
     const url = `score/${id}`;
-    return baseApiRequest.put(url, body);
+    return baseApiRequest.patch(url, body);
   },
 
-  delete(id: string) {
+  delete(id: string | number) {
     const url = `score/${id}`;
     return baseApiRequest.delete(url);
   },

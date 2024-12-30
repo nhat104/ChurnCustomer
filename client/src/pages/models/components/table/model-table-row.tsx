@@ -14,6 +14,8 @@ import {
 
 import { useRouter } from 'src/routes/hooks';
 
+import { fDate, fDateTime } from 'src/utils/format-time';
+
 import { Iconify } from 'src/components/iconify';
 
 import { DeleteModel } from '../modal/delete-model';
@@ -79,7 +81,7 @@ export function ModelTableRow({ row, selected, onSelectRow }: ModelTableRowProps
         <TableCell align="center">
           {row.cutoff_selection}
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            {row.last_score_time ? `Last scoring ${row.last_score_time}` : ''}
+            {row.last_score_time ? `Last scoring ${fDate(row.last_score_time, 'DD.MM.YYYY')}` : ''}
           </Typography>
         </TableCell>
 
@@ -93,7 +95,7 @@ export function ModelTableRow({ row, selected, onSelectRow }: ModelTableRowProps
           )}
         </TableCell>
 
-        <TableCell>{row.created_at}</TableCell>
+        <TableCell>{fDateTime(row.created_at)}</TableCell>
 
         <TableCell align="right">
           <IconButton onClick={handleOpenPopover}>

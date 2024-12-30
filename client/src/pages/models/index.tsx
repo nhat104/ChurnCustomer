@@ -63,7 +63,7 @@ export default function Model() {
   });
 
   useEffect(() => {
-    dispatch(modelsActions.modelsRequest({ offset: 0, limit: 10 }));
+    dispatch(modelsActions.modelsRequest({ offset: 0, limit: 100 }));
   }, [dispatch]);
 
   useEffect(() => {
@@ -75,10 +75,12 @@ export default function Model() {
 
   useEffect(() => {
     if (deleteModelStatus) {
+      // unchecked all selected rows
+      table.onSelectAllRows(false, []);
       dispatch(modelActions.resetModel());
-      dispatch(modelsActions.modelsRequest({ offset: 0, limit: 10 }));
+      dispatch(modelsActions.modelsRequest({ offset: 0, limit: 100 }));
     }
-  }, [dispatch, deleteModelStatus]);
+  }, [dispatch, deleteModelStatus, table]);
 
   const notFound = !dataFiltered.length && !!filterName;
 
@@ -126,7 +128,7 @@ export default function Model() {
         {dataModels && (
           <Card>
             <ModelTableToolbar
-              numSelected={table.selected.length}
+              selected={table.selected}
               filterName={filterName}
               onFilterName={(event: React.ChangeEvent<HTMLInputElement>) => {
                 setFilterName(event.target.value);
@@ -151,7 +153,7 @@ export default function Model() {
                     }
                     headLabel={[
                       { id: 'predictive_power', label: 'Power' },
-                      { id: 'name', label: 'Name' },
+                      { id: 'name', label: 'Name', width: 200 },
                       { id: 'cutoff_selection', label: 'Cutoff Selection', align: 'center' },
                       { id: 'calculation', label: 'Calculations', align: 'center' },
                       { id: 'status', label: 'Finished', align: 'center' },

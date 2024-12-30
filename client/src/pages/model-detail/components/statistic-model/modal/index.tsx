@@ -2,10 +2,15 @@ import { Modal, ModalBody, ModalContent } from '@nextui-org/react';
 
 import { Box, Button, Typography } from '@mui/material';
 
+import { fDateTime } from 'src/utils/format-time';
+
+import { useAppSelector } from 'src/store/hooks';
+import { selectModel } from 'src/pages/model-detail/slice/selectors';
+
 import { RocAuc } from './roc-auc';
 import { KSScore } from './ks-score';
 import { ModelOverview } from './model-overview';
-import { ProfitForecast } from './profit-forecast';
+// import { ProfitForecast } from './profit-forecast';
 import { DensityDistribution } from './density-distribution';
 
 // ----------------------------------------------------------------------
@@ -16,6 +21,8 @@ interface StatisticModalProps {
 }
 
 export default function StatisticModal({ isOpen, onOpenChange }: StatisticModalProps) {
+  const { dataModel } = useAppSelector(selectModel);
+
   return (
     <Modal
       isOpen={isOpen}
@@ -26,10 +33,10 @@ export default function StatisticModal({ isOpen, onOpenChange }: StatisticModalP
       <ModalContent>
         {(onClose) => (
           <ModalBody className="p-8">
-            <Typography variant="h4">credits_data_gm</Typography>
+            <Typography variant="h4">{dataModel?.name}</Typography>
             <Box sx={{ display: 'flex' }}>
               <Typography>
-                credits_data_gm.xlsx by mmnhat666@gmail.com , 18 October 2024 05:10:20
+                {dataModel?.filename} by mmnhat666@gmail.com , {fDateTime(dataModel?.created_at)}
               </Typography>
               <Typography sx={{ ml: 4 }}>Time taken 8.57 s.</Typography>
             </Box>
@@ -44,34 +51,7 @@ export default function StatisticModal({ isOpen, onOpenChange }: StatisticModalP
               <DensityDistribution
                 title="Density distribution by classes"
                 chart={{
-                  series: [
-                    {
-                      name: 'Good',
-                      data: [
-                        [0, 0],
-                        [2, 0.01],
-                        [4, 0.01],
-                        [6, 0.1],
-                        [7, 0.2],
-                        [8, 0.3],
-                        [10, 10.8],
-                        [12, 0.01],
-                      ],
-                    },
-                    {
-                      name: 'Bad',
-                      data: [
-                        [0, 0.01],
-                        [2, 0.1],
-                        [4, 0.8],
-                        [6, 1],
-                        [7, 1.3],
-                        [8, 1.8],
-                        [10, 1.7],
-                        [12, 0.2],
-                      ],
-                    },
-                  ],
+                  series: dataModel?.attributes?.density_distribution ?? [],
                 }}
                 mt={2}
               />
@@ -79,34 +59,8 @@ export default function StatisticModal({ isOpen, onOpenChange }: StatisticModalP
               <KSScore
                 title="K-S Score"
                 chart={{
-                  series: [
-                    {
-                      name: 'Good',
-                      data: [
-                        [0, 0],
-                        [2, 0.01],
-                        [4, 0.01],
-                        [6, 0.1],
-                        [7, 0.2],
-                        [8, 0.3],
-                        [10, 10.8],
-                        [12, 0.01],
-                      ],
-                    },
-                    {
-                      name: 'Bad',
-                      data: [
-                        [0, 0.01],
-                        [2, 0.1],
-                        [4, 0.8],
-                        [6, 1],
-                        [7, 1.3],
-                        [8, 1.8],
-                        [10, 1.7],
-                        [12, 0.2],
-                      ],
-                    },
-                  ],
+                  series: dataModel?.attributes?.ks_score_series ?? [],
+                  ksScoreAttr: dataModel?.attributes?.ks_score_attr,
                 }}
                 mt={2}
               />
@@ -114,29 +68,13 @@ export default function StatisticModal({ isOpen, onOpenChange }: StatisticModalP
               <RocAuc
                 title="ROC AUC chart"
                 chart={{
-                  series: [
-                    {
-                      name: 'ROC AUC',
-                      data: [
-                        [0, 0],
-                        [0.1, 0.1],
-                        [0.2, 0.2],
-                        [0.3, 0.3],
-                        [0.4, 0.4],
-                        [0.5, 0.5],
-                        [0.6, 0.6],
-                        [0.7, 0.7],
-                        [0.8, 0.8],
-                        [0.9, 0.9],
-                        [1, 1],
-                      ],
-                    },
-                  ],
+                  series: dataModel?.attributes?.roc_auc_series ?? [],
                 }}
+                auc_score={+(dataModel?.attributes?.roc_auc ?? 0)}
                 mt={2}
               />
 
-              <ProfitForecast
+              {/* <ProfitForecast
                 title="Profit forecast"
                 chart={{
                   series: [
@@ -156,7 +94,7 @@ export default function StatisticModal({ isOpen, onOpenChange }: StatisticModalP
                   ],
                 }}
                 mt={2}
-              />
+              /> */}
             </Box>
           </ModalBody>
         )}

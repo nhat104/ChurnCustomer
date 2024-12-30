@@ -1,7 +1,4 @@
-import type { ScoreHistoryResponse } from 'src/pages/score-history/slice/types';
-
 import { call, put, takeLatest } from 'redux-saga/effects'; //
-import { fDateTime } from 'src/utils/format-time';
 
 import { modelApi } from 'src/api';
 
@@ -12,7 +9,30 @@ function* modelRequestSaga(
 ): Generator<any, void, any> {
   try {
     const res = yield call(modelApi.getOne, action.payload);
-    res.data.created_at = fDateTime(res.data.created_at);
+    if (res?.data?.attributes) {
+      res.data.attributes = res.data.attributes.reduce(
+        (acc: any, cur: { name: string; value: string }) => {
+          if (
+            cur.name === 'density_distribution' ||
+            cur.name === 'ks_score_series' ||
+            cur.name === 'roc_auc_series' ||
+            cur.name === 'y_test' ||
+            cur.name === 'y_pred'
+          ) {
+            acc[cur.name] = JSON.parse(cur.value.replace(/'/g, '"')) ?? [];
+            return acc;
+          }
+          if (cur.name === 'ks_score_attr') {
+            acc[cur.name] = JSON.parse(cur.value.replace(/'/g, '"')) ?? {};
+            return acc;
+          }
+          acc[cur.name] = cur.value;
+          return acc;
+        },
+        {}
+      );
+    }
+
     yield put(actions.modelSuccess(res?.data));
   } catch (error) {
     yield put(actions.modelError());
@@ -24,7 +44,6 @@ function* updateModelSaga(
 ): Generator<any, void, any> {
   try {
     const res = yield call(modelApi.update, action.payload.id, action.payload.body);
-    res.data.created_at = fDateTime(res.data.created_at);
     yield put(actions.updateModelSuccess(res?.data));
   } catch (error) {
     yield put(actions.updateModelError());
@@ -47,12 +66,7 @@ function* scoresByModelRequestSaga(
 ): Generator<any, void, any> {
   try {
     const res = yield call(modelApi.getScoreHistory, action.payload);
-    const data = res?.data.map((model: ScoreHistoryResponse) => ({
-      ...model,
-      created_at: fDateTime(model.created_at),
-      updated_at: fDateTime(model.updated_at),
-    }));
-    yield put(actions.scoreByModelSuccess(data));
+    yield put(actions.scoreByModelSuccess(res.data));
   } catch (error) {
     yield put(actions.scoreByModelError());
   }

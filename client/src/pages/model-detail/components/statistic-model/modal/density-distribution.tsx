@@ -36,17 +36,18 @@ export function DensityDistribution({ title, subheader, chart, ...other }: Props
       tickAmount: 5,
       axisBorder: { show: true },
       axisTicks: { show: true },
-      labels: { show: true, formatter: (value) => `${Number(value) / 10}` },
+      labels: { show: true, formatter: (value) => `${(Number(value) / 10).toFixed(2)}` },
       title: { text: 'Score', style: { fontSize: '14px', fontWeight: 400 } },
     },
     yaxis: {
-      stepSize: 2,
+      // stepSize: 2,
       tickAmount: 6,
       axisBorder: { show: true },
       axisTicks: { show: true },
       title: { text: 'Density', style: { fontSize: '14px', fontWeight: 400 } },
     },
     tooltip: {
+      enabled: false,
       shared: true,
       followCursor: true,
       onDatasetHover: {

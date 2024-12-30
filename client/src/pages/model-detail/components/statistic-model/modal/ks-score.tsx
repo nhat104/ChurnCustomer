@@ -1,4 +1,5 @@
 import type { ChartOptions } from 'src/components/chart';
+import type { KSScoreAttribute } from 'src/pages/model-detail/slice/types';
 
 import { useTheme } from '@mui/material/styles';
 import { alpha, Box, type BoxProps, Typography } from '@mui/material';
@@ -17,6 +18,7 @@ type Props = BoxProps & {
       data: number[][];
     }[];
     options?: ChartOptions;
+    ksScoreAttr?: KSScoreAttribute;
   };
 };
 
@@ -26,6 +28,52 @@ export function KSScore({ title, subheader, chart, ...other }: Props) {
   const chartColors = [theme.palette.primary.dark, alpha(theme.palette.primary.light, 0.3)];
 
   const chartOptions = useChart({
+    annotations: {
+      xaxis: [
+        {
+          x: chart.ksScoreAttr?.ks_threshold,
+          strokeDashArray: 5,
+          label: {
+            text: `K-S Score: ${chart.ksScoreAttr?.ks_statistic} at ${((chart.ksScoreAttr?.ks_threshold ?? 0) / 10).toFixed(2)}`,
+            textAnchor: 'start',
+            orientation: 'horizontal',
+            offsetX: 20,
+            offsetY: 100,
+            style: {
+              fontSize: '14px',
+              color: theme.palette.text.primary,
+              background: 'transparent',
+              padding: {
+                left: 10,
+                top: 5,
+              },
+            },
+          },
+        },
+      ],
+      points: [
+        {
+          x: chart.ksScoreAttr?.ks_threshold,
+          y: chart.ksScoreAttr?.point_positive,
+          marker: {
+            size: 2,
+            fillColor: theme.palette.common.white,
+            strokeColor: '#f8c630',
+            strokeWidth: 2,
+          },
+        },
+        {
+          x: chart.ksScoreAttr?.ks_threshold,
+          y: chart.ksScoreAttr?.point_negative,
+          marker: {
+            size: 2,
+            fillColor: theme.palette.common.white,
+            strokeColor: '#f8c630',
+            strokeWidth: 2,
+          },
+        },
+      ],
+    },
     colors: chartColors,
     stroke: {
       width: 2,
@@ -33,15 +81,14 @@ export function KSScore({ title, subheader, chart, ...other }: Props) {
     grid: { show: false },
     xaxis: {
       type: 'numeric',
-      tickAmount: 5,
+      tickAmount: 4,
+      max: 10.0,
       axisBorder: { show: true },
       axisTicks: { show: true },
-      labels: { show: true, formatter: (value) => `${Number(value) / 10}` },
+      labels: { show: true, formatter: (value) => `${(Number(value) / 10).toFixed(2)}` },
       title: { text: 'Prediction result', style: { fontSize: '14px', fontWeight: 400 } },
     },
     yaxis: {
-      stepSize: 2,
-      tickAmount: 6,
       axisBorder: { show: true },
       axisTicks: { show: true },
       title: {

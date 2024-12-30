@@ -3,7 +3,7 @@ import type { ScoreHistoryResponse } from 'src/pages/score-history/slice/types';
 
 import { createSlice } from '@reduxjs/toolkit';
 
-import type { ModelDetail, ModelState, ModelUpdate, scoresByModelRequest } from './types';
+import type { ModelDetail, ModelState, ModelUpdate, ScoresByModelRequest } from './types';
 
 export const initialState: ModelState = {
   loading: false,
@@ -63,7 +63,7 @@ const slice = createSlice({
       state.error = true;
     },
 
-    scoresByModelRequest(state, action: PayloadAction<scoresByModelRequest>) {
+    scoresByModelRequest(state, action: PayloadAction<ScoresByModelRequest>) {
       state.loading = true;
       state.error = false;
     },

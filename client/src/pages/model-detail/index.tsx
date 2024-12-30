@@ -15,6 +15,8 @@ import {
 
 import { useRouter } from 'src/routes/hooks';
 
+import { fDateTime } from 'src/utils/format-time';
+
 import { CONFIG } from 'src/config-global';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { useAppDispatch, useAppSelector } from 'src/store/hooks';
@@ -34,9 +36,12 @@ import { modelActions } from './slice';
 import { selectModel } from './slice/selectors';
 import PredictBox from './components/predict-box';
 import MoreAction from './components/more-action';
+import { ModelError } from './components/model-error';
 import { dashboardActions } from '../dashboard/slice';
+import { scoreResultActions } from '../score-detail/slice';
 import { selectDashboard } from '../dashboard/slice/selectors';
 import CutoffBox from './components/cutoff-selection/cutoff-box';
+import { selectScoreResult } from '../score-detail/slice/selectors';
 import StatisticBox from './components/statistic-model/statistic-box';
 import { DeleteModel } from '../models/components/modal/delete-model';
 import { ScoreTableHead, ScoreTableRow, ScoreTableToolbar } from './components/table';
@@ -57,6 +62,7 @@ export default function ModelDetail() {
   const { loading, dataModel, scoresByModel, editNameMode, deleteModelStatus } =
     useAppSelector(selectModel);
   const { loading: predictLoading, predictResult } = useAppSelector(selectDashboard);
+  const { loading: deleteLoading, deleteScoreHistoryStatus } = useAppSelector(selectScoreResult);
   const dispatch = useAppDispatch();
 
   const dataFiltered = applyFilter({
@@ -91,6 +97,13 @@ export default function ModelDetail() {
     }
   }, [dispatch, predictResult, router]);
 
+  useEffect(() => {
+    if (deleteScoreHistoryStatus) {
+      dispatch(modelActions.scoresByModelRequest({ modelId: +modelId!, params: {} }));
+      dispatch(scoreResultActions.resetScoreHistory());
+    }
+  }, [deleteScoreHistoryStatus, dispatch, modelId]);
+
   const handleOpenDeleteModal = () => {
     setOpenModal(true);
   };
@@ -116,32 +129,35 @@ export default function ModelDetail() {
         <meta name="keywords" content="react,material,kit,application,dashboard,admin,template" />
       </Helmet>
 
-      {(loading || predictLoading) && <Loading />}
+      {(loading || predictLoading || deleteLoading) && <Loading />}
 
-      {dataModel && scoresByModel && (
+      {dataModel && dataModel.status === 'Finished' ? (
         <DashboardContent>
-          {editNameMode ? (
-            <OutlinedInput
-              defaultValue={dataModel.name}
-              inputRef={inputNameRef}
-              onBlur={(e) => dispatch(modelActions.setEditNameMode(false))}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  dispatch(
-                    modelActions.updateModelRequest({
-                      id: +modelId!,
-                      body: { name: inputNameRef.current?.value },
-                    })
-                  );
-                }
-              }}
-              sx={{ maxWidth: '50%' }}
-            />
-          ) : (
-            <Typography variant="h4">{dataModel.name}</Typography>
-          )}
+          <Box sx={{ height: 56 }}>
+            {editNameMode ? (
+              <OutlinedInput
+                defaultValue={dataModel.name}
+                inputRef={inputNameRef}
+                fullWidth
+                onBlur={(e) => dispatch(modelActions.setEditNameMode(false))}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    dispatch(
+                      modelActions.updateModelRequest({
+                        id: +modelId!,
+                        body: { name: inputNameRef.current?.value },
+                      })
+                    );
+                  }
+                }}
+                sx={{ maxWidth: '50%' }}
+              />
+            ) : (
+              <Typography variant="h4">{dataModel.name}</Typography>
+            )}
+          </Box>
 
-          <Box display="flex" justifyContent="flex-end" sx={{ mt: 3, mb: 1 }}>
+          <Box display="flex" justifyContent="flex-end" sx={{ mt: 2, mb: 1 }}>
             <MoreAction
               options={[
                 { icon: 'solar:map-arrow-right-outline', value: 'export', label: 'Export' },
@@ -184,7 +200,7 @@ export default function ModelDetail() {
           <Box sx={{ color: 'text.secondary', mt: 2 }}>
             <Box sx={{ display: 'flex' }}>
               <Typography>
-                credits_data_gm.xlsx by mmnhat666@gmail.com , {dataModel.created_at}
+                {dataModel?.filename} by mmnhat666@gmail.com, {fDateTime(dataModel.created_at)}
               </Typography>
               <Typography sx={{ ml: 4 }}>Time taken 8.57 s.</Typography>
             </Box>
@@ -242,7 +258,7 @@ export default function ModelDetail() {
                         }
                         headLabel={[
                           { id: 'name', label: 'Name' },
-                          { id: 'number_approve', label: 'Quantity' },
+                          { id: 'number_stay', label: 'Quantity' },
                           { id: 'ml_model', label: 'Model' },
                           { id: 'status', label: 'Finished', align: 'center' },
                           { id: 'created_at', label: 'Created At' },
@@ -294,6 +310,12 @@ export default function ModelDetail() {
 
           <DeleteModel open={openModal} modelId={+(modelId ?? 0)} handleClose={handleCloseModal} />
         </DashboardContent>
+      ) : (
+        !loading && (
+          <DashboardContent>
+            <ModelError />
+          </DashboardContent>
+        )
       )}
     </>
   );

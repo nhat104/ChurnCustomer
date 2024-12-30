@@ -1,4 +1,4 @@
-import type { ModelUpdate, scoresByModelRequest } from 'src/pages/model-detail/slice/types';
+import type { ModelUpdate, ScoresByModelRequest } from 'src/pages/model-detail/slice/types';
 
 import baseApiRequest from './baseApiRequest';
 
@@ -20,7 +20,7 @@ export const modelApi = {
   },
 
   getOne(id: number | string) {
-    const url = `model/${id}`;
+    const url = `model/${id.toString()}`;
     return baseApiRequest.get(url);
   },
 
@@ -48,7 +48,7 @@ export const modelApi = {
     return baseApiRequest.delete(url);
   },
 
-  getScoreHistory({ modelId, params }: scoresByModelRequest) {
+  getScoreHistory({ modelId, params }: ScoresByModelRequest) {
     const { offset = 0, limit = 50 } = params;
     const url = `score/model/${modelId}?offset=${offset}&limit=${limit}`;
     return baseApiRequest.get(url);

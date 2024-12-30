@@ -17,7 +17,7 @@ export type DatePickerFormat = Dayjs | Date | string | number | null | undefined
  * Docs: https://day.js.org/docs/en/display/format
  */
 export const formatStr = {
-  dateTime: 'DD MMM YYYY HH:mm:ss', // 17 Apr 2022 12:00:00
+  dateTime: 'DD MMMM YYYY HH:mm:ss', // 17 Apr 2022 12:00:00
   date: 'DD MMM YYYY', // 17 Apr 2022
   time: 'h:mm a', // 12:00 am
   split: {

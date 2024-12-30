@@ -8,22 +8,16 @@ import { Popover, Checkbox, TableRow, MenuList, TableCell, Typography } from '@m
 
 import { useRouter } from 'src/routes/hooks';
 
+import { fDateTime } from 'src/utils/format-time';
+
+import { useAppSelector } from 'src/store/hooks';
+import { DeleteScoreHistory } from 'src/pages/score-history/components/modal/delete-score-history';
+
 import { Iconify } from 'src/components/iconify';
 
-// ----------------------------------------------------------------------
+import { selectModel } from '../../slice/selectors';
 
-export type PredictProps = {
-  id: string;
-  name: string;
-  noRecord: number;
-  noApprove: number;
-  noDecline: number;
-  status: string;
-  cutoffSelection: number;
-  index: string;
-  finished: boolean;
-  createdAt: string;
-};
+// ----------------------------------------------------------------------
 
 type ScoreTableRowProps = {
   row: ScoreHistoryResponse;
@@ -32,8 +26,11 @@ type ScoreTableRowProps = {
 };
 
 export function ScoreTableRow({ row, selected, onSelectRow }: ScoreTableRowProps) {
-  const router = useRouter();
+  const [openModal, setOpenModal] = useState<number>();
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
+  const { dataModel } = useAppSelector(selectModel);
+
+  const router = useRouter();
 
   const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
     setOpenPopover(event.currentTarget);
@@ -47,6 +44,18 @@ export function ScoreTableRow({ row, selected, onSelectRow }: ScoreTableRowProps
     router.push(`/scoring/${row.id}`);
   }, [router, row.id]);
 
+  const handleOpenDeleteModal = useCallback(
+    (id: number) => {
+      setOpenModal(id);
+      setOpenPopover(null);
+    },
+    [setOpenPopover]
+  );
+
+  const handleCloseModal = useCallback(() => {
+    setOpenModal(undefined);
+  }, []);
+
   return (
     <>
       <TableRow hover tabIndex={-1} role="checkbox" selected={selected}>
@@ -57,16 +66,16 @@ export function ScoreTableRow({ row, selected, onSelectRow }: ScoreTableRowProps
         <TableCell>{row.name}</TableCell>
 
         <TableCell>
-          {(row.number_approve ?? 0) + (row.number_decline ?? 0)} records
+          {(row.number_stay ?? 0) + (row.number_exit ?? 0)} records
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            {row.number_approve} approve | {row.number_decline} decline
+            {row.number_stay} stay | {row.number_exit} exit
           </Typography>
         </TableCell>
 
         <TableCell>
-          {row.name}
+          {dataModel?.name}
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            Cutoff selection {row.ml_model.cutoff_selection}
+            Cutoff selection {dataModel?.cutoff_selection}
           </Typography>
         </TableCell>
 
@@ -78,7 +87,7 @@ export function ScoreTableRow({ row, selected, onSelectRow }: ScoreTableRowProps
           )}
         </TableCell>
 
-        <TableCell>{row.created_at}</TableCell>
+        <TableCell>{fDateTime(row.created_at)}</TableCell>
 
         {/* <TableCell>
           <Label color={(row.status === 'banned' && 'error') || 'success'}>{row.status}</Label>
@@ -119,12 +128,18 @@ export function ScoreTableRow({ row, selected, onSelectRow }: ScoreTableRowProps
             Show
           </MenuItem>
 
-          <MenuItem onClick={handleClosePopover} sx={{ color: 'error.main' }}>
+          <MenuItem onClick={() => handleOpenDeleteModal(row.id)} sx={{ color: 'error.main' }}>
             <Iconify icon="solar:trash-bin-trash-bold" />
             Delete
           </MenuItem>
         </MenuList>
       </Popover>
+
+      <DeleteScoreHistory
+        open={openModal === row.id}
+        modelId={row.id}
+        handleClose={handleCloseModal}
+      />
     </>
   );
 }

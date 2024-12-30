@@ -8,13 +8,13 @@ import {
 } from '@mui/material';
 
 import { useAppDispatch } from 'src/store/hooks';
-import { modelActions } from 'src/pages/model-detail/slice';
+import { scoreResultActions } from 'src/pages/score-detail/slice';
 
 // ----------------------------------------------------------------------
 
 interface DeleteScoreHistoryProps {
   open: boolean;
-  modelId: number;
+  modelId: number | number[];
   handleClose: () => void;
 }
 
@@ -22,7 +22,13 @@ export function DeleteScoreHistory({ open, modelId, handleClose }: DeleteScoreHi
   const dispatch = useAppDispatch();
 
   const handleConfirmDelete = () => {
-    dispatch(modelActions.deleteModelRequest(modelId));
+    if (Array.isArray(modelId)) {
+      modelId.forEach((id) => {
+        dispatch(scoreResultActions.deleteScoreHistoryRequest(id));
+      });
+    } else {
+      dispatch(scoreResultActions.deleteScoreHistoryRequest(modelId));
+    }
     handleClose();
   };
 
@@ -31,8 +37,9 @@ export function DeleteScoreHistory({ open, modelId, handleClose }: DeleteScoreHi
       <DialogTitle>Confirm Delete</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          Are you sure you want to delete this model? This action will also delete all score
-          histories for this model!
+          Are you sure you want to delete{' '}
+          {Array.isArray(modelId) ? 'these prediction histories' : 'this prediction history'}? You
+          can&apos;t undo this action afterward.
         </DialogContentText>
       </DialogContent>
       <DialogActions>

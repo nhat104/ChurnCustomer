@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
+import { Divider } from '@nextui-org/react';
 import { useParams } from 'react-router-dom';
-import { Divider, useDisclosure } from '@nextui-org/react';
-import { type MouseEvent, useCallback, useEffect, useState } from 'react';
+import { type MouseEvent, useCallback, useEffect, useRef, useState } from 'react';
 
 import {
   Box,
@@ -11,6 +11,7 @@ import {
   MenuItem,
   menuItemClasses,
   MenuList,
+  OutlinedInput,
   Popover,
   Table,
   TableBody,
@@ -20,6 +21,8 @@ import {
 } from '@mui/material';
 
 import { useRouter } from 'src/routes/hooks';
+
+import { fDateTime } from 'src/utils/format-time';
 
 import { CONFIG } from 'src/config-global';
 import { DashboardContent } from 'src/layouts/dashboard';
@@ -33,7 +36,6 @@ import { TableEmptyRows, useTable } from 'src/components/table';
 import { scoreResultActions } from './slice';
 import MoreAction from './components/more-action';
 import { selectScoreResult } from './slice/selectors';
-import { FeatureImportant } from './components/feature-important';
 import {
   applyFilter,
   emptyRows,
@@ -47,14 +49,14 @@ import type { ScoreResultResponse } from './slice/types';
 // ----------------------------------------------------------------------
 
 export default function ScoreDetail() {
-  const table = useTable<ScoreResultResponse>({ _orderBy: 'score', _order: 'asc' });
-  const router = useRouter();
   const { scoreId } = useParams();
   const [openPopover, setOpenPopover] = useState<HTMLDivElement | null>(null);
+  const inputNameRef = useRef<HTMLInputElement | null>(null);
 
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const table = useTable<ScoreResultResponse>({ _orderBy: 'score', _order: 'desc' });
+  const router = useRouter();
 
-  const { loading, dataScoreHistory } = useAppSelector(selectScoreResult);
+  const { loading, dataScoreHistory, editNameMode } = useAppSelector(selectScoreResult);
   const dispatch = useAppDispatch();
 
   const handleBackRoute = useCallback(() => {
@@ -68,7 +70,7 @@ export default function ScoreDetail() {
   }, [dispatch, scoreId]);
 
   const handleDetailModel = () => {
-    router.push(`/model/${dataScoreHistory?.ml_model.id}`);
+    router.push(`/model/${dataScoreHistory?.ml_model?.id}`);
   };
 
   const handleOpenPopover = useCallback((event: MouseEvent<HTMLDivElement>) => {
@@ -83,6 +85,13 @@ export default function ScoreDetail() {
     inputData: dataScoreHistory?.score_results ?? [],
     comparator: getComparator(table.order, table.orderBy),
   });
+
+  const handleEditName = () => {
+    dispatch(scoreResultActions.setEditNameMode(true));
+    setTimeout(() => {
+      inputNameRef.current?.focus();
+    }, 100);
+  };
 
   return (
     <>
@@ -108,14 +117,41 @@ export default function ScoreDetail() {
                 <MoreAction
                   options={[
                     { icon: 'solar:star-outline', value: 'addFavorite', label: 'Add to favorite' },
-                    { icon: 'solar:pen-bold', value: 'editName', label: 'Edit name' },
+                    {
+                      icon: 'solar:pen-bold',
+                      value: 'editName',
+                      label: 'Edit name',
+                      onClick: handleEditName,
+                    },
                   ]}
                 />
               </Box>
 
-              <Typography variant="h4" sx={{ mt: 1 }}>
+              {editNameMode ? (
+                <OutlinedInput
+                  defaultValue={dataScoreHistory.name}
+                  inputRef={inputNameRef}
+                  onBlur={() => dispatch(scoreResultActions.setEditNameMode(false))}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      dispatch(
+                        scoreResultActions.updateScoreHistoryRequest({
+                          id: +scoreId!,
+                          body: { name: inputNameRef.current?.value },
+                        })
+                      );
+                    }
+                  }}
+                  sx={{ maxWidth: '50%', height: 44 }}
+                />
+              ) : (
+                <Typography variant="h4" sx={{ mt: 1 }}>
+                  {dataScoreHistory.name}
+                </Typography>
+              )}
+              {/* <Typography variant="h4" sx={{ mt: 1 }}>
                 {dataScoreHistory.name}
-              </Typography>
+              </Typography> */}
               <Typography variant="subtitle1" sx={{ color: 'primary.main', mt: 1, mb: 2 }}>
                 Scoring calculation ID {dataScoreHistory?.id}
               </Typography>
@@ -133,29 +169,27 @@ export default function ScoreDetail() {
               >
                 <Box>
                   <Typography variant="body1">
-                    {(dataScoreHistory.number_approve ?? 0) +
-                      (dataScoreHistory.number_decline ?? 0)}{' '}
+                    {(dataScoreHistory.number_stay ?? 0) + (dataScoreHistory.number_exit ?? 0)}{' '}
                     records
                   </Typography>
                   <Typography variant="body2">
-                    {dataScoreHistory.number_approve} approve | {dataScoreHistory.number_decline}{' '}
-                    decline
+                    {dataScoreHistory.number_stay} stay | {dataScoreHistory.number_exit} exit
                   </Typography>
                 </Box>
                 <Box onClick={handleDetailModel} sx={{ cursor: 'pointer' }}>
-                  <Typography variant="body1">{dataScoreHistory.ml_model.name}</Typography>
+                  <Typography variant="body1">{dataScoreHistory?.ml_model?.name}</Typography>
                   <Typography variant="body2">
-                    Cutoff selection {dataScoreHistory.ml_model.cutoff_selection}
+                    Cutoff selection {dataScoreHistory?.ml_model?.cutoff_selection}
                   </Typography>
                 </Box>
                 <Box>
                   <Typography variant="body1">File</Typography>
-                  <Typography variant="body2">credits_data_gm.xlsx</Typography>
+                  <Typography variant="body2">{dataScoreHistory?.ml_model?.filename}</Typography>
                 </Box>
                 <Box>
                   <Typography variant="body1">mmnhat666@gmail.com</Typography>
                   <Typography variant="body2">
-                    {dataScoreHistory.ml_model.created_at}
+                    {fDateTime(dataScoreHistory?.ml_model?.created_at)}
                     <span className="ml-4">Time taken 1.53 s.</span>
                   </Typography>
                 </Box>
@@ -223,10 +257,12 @@ export default function ScoreDetail() {
                     orderBy={table.orderBy}
                     headLabel={[
                       { id: 'row', label: 'Row' },
+                      { id: 'name', label: 'Name' },
                       { id: 'score', label: 'Score' },
-                      { id: '', width: 120 },
-                      { id: 'decision', label: 'Quantity' },
+                      { id: '', width: 140 },
+                      { id: 'resolution', label: 'Decision' },
                     ]}
+                    rows={table.rowsPerPage + 1}
                   />
                   <TableBody>
                     {dataFiltered
@@ -235,7 +271,7 @@ export default function ScoreDetail() {
                         table.page * table.rowsPerPage + table.rowsPerPage
                       )
                       .map((row, index) => (
-                        <ScoreTableRow index={index} onOpen={onOpen} key={row.id} row={row} />
+                        <ScoreTableRow index={index} key={row.id} row={row} />
                       ))}
 
                     <TableEmptyRows
@@ -266,7 +302,7 @@ export default function ScoreDetail() {
         loading && <Loading />
       )}
 
-      <FeatureImportant isOpen={isOpen} onOpenChange={onOpenChange} />
+      {/* <FeatureImportant isOpen={isOpen} onOpenChange={onOpenChange} /> */}
     </>
   );
 }

@@ -28,7 +28,9 @@ import {
 
 import { scoreHistoryActionss } from './slice';
 import { selectScoreHistory } from './slice/selectors';
+import { scoreResultActions } from '../score-detail/slice';
 import { ScoreTableRow } from './components/table/score-table-row';
+import { selectScoreResult } from '../score-detail/slice/selectors';
 import { ScoreTableHead } from './components/table/score-table-head';
 import { ScoreTableToolbar } from './components/table/score-table-toolbar';
 
@@ -41,6 +43,8 @@ export default function ScoreHistory() {
   const [filterName, setFilterName] = useState('');
 
   const { loading, dataScoreHistories } = useAppSelector(selectScoreHistory);
+  const { loading: loadingScoreResult, deleteScoreHistoryStatus } =
+    useAppSelector(selectScoreResult);
   const dispatch = useAppDispatch();
 
   const dataFiltered = applyFilter({
@@ -50,8 +54,17 @@ export default function ScoreHistory() {
   });
 
   useEffect(() => {
-    dispatch(scoreHistoryActionss.scoreHistoriesRequest({ offset: 0, limit: 10 }));
+    dispatch(scoreHistoryActionss.scoreHistoriesRequest({ offset: 0, limit: 100 }));
   }, [dispatch]);
+
+  useEffect(() => {
+    if (deleteScoreHistoryStatus) {
+      // unchecked all selected rows
+      table.onSelectAllRows(false, []);
+      dispatch(scoreResultActions.resetScoreHistory());
+      dispatch(scoreHistoryActionss.scoreHistoriesRequest({ offset: 0, limit: 100 }));
+    }
+  }, [dispatch, deleteScoreHistoryStatus, table]);
 
   const notFound = !dataFiltered.length && !!filterName;
 
@@ -66,10 +79,11 @@ export default function ScoreHistory() {
           <Typography variant="h4">Predicting history</Typography>
         </Box>
 
-        {dataScoreHistories ? (
+        {(loading || loadingScoreResult) && <Loading />}
+        {dataScoreHistories && (
           <Card>
             <ScoreTableToolbar
-              numSelected={table.selected.length}
+              selected={table.selected}
               filterName={filterName}
               onFilterName={(event: React.ChangeEvent<HTMLInputElement>) => {
                 setFilterName(event.target.value);
@@ -94,7 +108,7 @@ export default function ScoreHistory() {
                     }
                     headLabel={[
                       { id: 'name', label: 'Name' },
-                      { id: 'number_approve', label: 'Quantity' },
+                      { id: 'number_stay', label: 'Quantity' },
                       { id: 'predictive_power', label: 'Power' },
                       { id: 'ml_model', label: 'Model' },
                       { id: 'status', label: 'Finished', align: 'center' },
@@ -142,8 +156,6 @@ export default function ScoreHistory() {
               onRowsPerPageChange={table.onChangeRowsPerPage}
             />
           </Card>
-        ) : (
-          loading && <Loading />
         )}
       </DashboardContent>
     </>

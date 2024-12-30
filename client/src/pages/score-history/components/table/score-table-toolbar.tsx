@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import Tooltip from '@mui/material/Tooltip';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -7,19 +9,28 @@ import InputAdornment from '@mui/material/InputAdornment';
 
 import { Iconify } from 'src/components/iconify';
 
+import { DeleteScoreHistory } from '../modal/delete-score-history';
+
 // ----------------------------------------------------------------------
 
 type ScoreTableToolbarProps = {
-  numSelected: number;
+  selected: number[];
   filterName: string;
   onFilterName: (event: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
-export function ScoreTableToolbar({
-  numSelected,
-  filterName,
-  onFilterName,
-}: ScoreTableToolbarProps) {
+export function ScoreTableToolbar({ selected, filterName, onFilterName }: ScoreTableToolbarProps) {
+  const [openModal, setOpenModal] = useState<boolean>(false);
+  const numSelected = selected.length;
+
+  const handleOpenModal = () => {
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
+
   return (
     <Toolbar
       sx={{
@@ -54,7 +65,7 @@ export function ScoreTableToolbar({
 
       {numSelected > 0 ? (
         <Tooltip title="Delete">
-          <IconButton>
+          <IconButton onClick={handleOpenModal}>
             <Iconify icon="solar:trash-bin-trash-bold" />
           </IconButton>
         </Tooltip>
@@ -65,6 +76,8 @@ export function ScoreTableToolbar({
           </IconButton>
         </Tooltip>
       )}
+
+      <DeleteScoreHistory open={openModal} modelId={selected} handleClose={handleCloseModal} />
     </Toolbar>
   );
 }

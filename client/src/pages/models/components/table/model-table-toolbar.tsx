@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import Tooltip from '@mui/material/Tooltip';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -7,19 +9,29 @@ import InputAdornment from '@mui/material/InputAdornment';
 
 import { Iconify } from 'src/components/iconify';
 
+import { DeleteModel } from '../modal/delete-model';
+
 // ----------------------------------------------------------------------
 
 type ModelTableToolbarProps = {
-  numSelected: number;
+  selected: number[];
   filterName: string;
   onFilterName: (event: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
-export function ModelTableToolbar({
-  numSelected,
-  filterName,
-  onFilterName,
-}: ModelTableToolbarProps) {
+export function ModelTableToolbar({ selected, filterName, onFilterName }: ModelTableToolbarProps) {
+  const [openModal, setOpenModal] = useState<boolean>(false);
+
+  const numSelected = selected.length;
+
+  const handleOpenModal = () => {
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
+
   return (
     <Toolbar
       sx={{
@@ -54,7 +66,7 @@ export function ModelTableToolbar({
 
       {numSelected > 0 ? (
         <Tooltip title="Delete">
-          <IconButton>
+          <IconButton onClick={handleOpenModal}>
             <Iconify icon="solar:trash-bin-trash-bold" />
           </IconButton>
         </Tooltip>
@@ -65,6 +77,8 @@ export function ModelTableToolbar({
           </IconButton>
         </Tooltip>
       )}
+
+      <DeleteModel open={openModal} modelId={selected} handleClose={handleCloseModal} />
     </Toolbar>
   );
 }
