@@ -47,6 +47,18 @@ class InvalidCredentials(BaseException):
     pass
 
 
+class ModelNotFound(BaseException):
+    """Model not found"""
+
+    pass
+
+
+class ScoreResultNotFound(BaseException):
+    """Score result not found"""
+
+    pass
+
+
 def create_exception_handler(
     status_code: int, detail: Any
 ) -> Callable[[Request, Exception], HTTPException]:
@@ -62,6 +74,7 @@ def register_all_errors(app: FastAPI):
         create_exception_handler(
             status_code=status.HTTP_403_FORBIDDEN,
             detail={
+                "status_code": 403,
                 "message": "User with email already exists",
                 "error_code": "user_exists",
             },
@@ -118,6 +131,28 @@ def register_all_errors(app: FastAPI):
                 "message": "Please provide a valid access token",
                 "resolution": "Please get an access token",
                 "error_code": "access_token_required",
+            },
+        ),
+    )
+    app.add_exception_handler(
+        ModelNotFound,
+        create_exception_handler(
+            status_code=status.HTTP_200_OK,
+            detail={
+                "status": 404,
+                "message": "Model not found",
+                "error_code": "model_not_found",
+            },
+        ),
+    )
+    app.add_exception_handler(
+        ScoreResultNotFound,
+        create_exception_handler(
+            status_code=status.HTTP_200_OK,
+            detail={
+                "status": 404,
+                "message": "Score result not found",
+                "error_code": "score_result_not_found",
             },
         ),
     )

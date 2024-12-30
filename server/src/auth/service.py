@@ -2,7 +2,7 @@ from sqlmodel import select
 
 from utils.database import SessionDep
 from utils.models import User
-from .schema import UserCreate
+from .schemas import UserCreate
 from .utils import generate_password_hash
 
 
