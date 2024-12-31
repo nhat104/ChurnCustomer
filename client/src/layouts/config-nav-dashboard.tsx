@@ -22,11 +22,11 @@ export const navData = [
     path: '/scoring',
     icon: icon('ic-cart'),
   },
-  {
-    title: 'Monitoring',
-    path: '/monitoring',
-    icon: icon('ic-blog'),
-  },
+  // {
+  //   title: 'Monitoring',
+  //   path: '/monitoring',
+  //   icon: icon('ic-blog'),
+  // },
   // {
   //   title: 'Home',
   //   path: '/home',

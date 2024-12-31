@@ -17,7 +17,7 @@ export const ModelPage = lazy(() => import('src/pages/models'));
 export const ModelDetailPage = lazy(() => import('src/pages/model-detail'));
 export const ScoreHistoryPage = lazy(() => import('src/pages/score-history'));
 export const ScoreDetailPage = lazy(() => import('src/pages/score-detail'));
-export const MonitoringPage = lazy(() => import('src/pages/monitoring'));
+// export const MonitoringPage = lazy(() => import('src/pages/monitoring'));
 export const HomePage = lazy(() => import('src/pages/home'));
 export const BlogPage = lazy(() => import('src/pages/blog'));
 export const SignInPage = lazy(() => import('src/pages/sign-in'));
@@ -78,7 +78,7 @@ export function Router() {
             { path: ':scoreId', element: <ScoreDetailPage /> },
           ],
         },
-        { path: 'monitoring', element: <MonitoringPage /> },
+        // { path: 'monitoring', element: <MonitoringPage /> },
         { path: 'home', element: <HomePage /> },
         { path: 'products', element: <ProductsPage /> },
         { path: 'blog', element: <BlogPage /> },

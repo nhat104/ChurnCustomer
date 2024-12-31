@@ -16,7 +16,7 @@ import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
-export default function ScoreHistory() {
+export default function Monitoring() {
   const [dateRange, setDateRange] = useState<RangeValue<DateValue>>({
     start: parseDate(dayjs().subtract(1, 'week').toDate().toISOString().split('T')[0]),
     end: parseDate(dayjs().toDate().toISOString().split('T')[0]),
