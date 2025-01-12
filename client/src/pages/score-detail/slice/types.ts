@@ -17,7 +17,7 @@ export interface ScoreResultResponse {
   name: number;
   score?: number;
   resolution?: string;
-  interpretation?: [number, string][];
+  interpretation?: [number, number, string][];
 }
 
 export interface ScoreHistoryUpdate {

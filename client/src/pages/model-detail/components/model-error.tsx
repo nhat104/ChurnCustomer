@@ -1,11 +1,13 @@
 import { Box, Button, Typography } from '@mui/material';
 
 import { useAppSelector } from 'src/store/hooks';
+import { selectAuth } from 'src/pages/sign-in/slice/selectors';
 
 import { selectModel } from '../slice/selectors';
 
 export const ModelError = () => {
   const { dataModel } = useAppSelector(selectModel);
+  const { dataAuth } = useAppSelector(selectAuth);
 
   return (
     <Box>
@@ -29,7 +31,7 @@ export const ModelError = () => {
       >
         <Box>
           <Typography>Built by</Typography>
-          <Typography>mmnhat666@gmail.com</Typography>
+          <Typography>{dataAuth?.user?.email}</Typography>
         </Box>
         <Box>
           <Typography>Model name</Typography>

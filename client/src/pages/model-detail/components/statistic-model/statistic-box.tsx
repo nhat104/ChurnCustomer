@@ -2,9 +2,10 @@ import { CircularProgress, useDisclosure } from '@nextui-org/react';
 
 import { Box, Button, Card, CardContent, Typography } from '@mui/material';
 
-import { useAppSelector } from 'src/store/hooks';
+import { useAppDispatch, useAppSelector } from 'src/store/hooks';
 
 import StatisticModal from './modal';
+import { modelActions } from '../../slice';
 import { selectModel } from '../../slice/selectors';
 
 // ----------------------------------------------------------------------
@@ -12,11 +13,16 @@ import { selectModel } from '../../slice/selectors';
 export default function StatisticBox() {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const { dataModel } = useAppSelector(selectModel);
+  const dispatch = useAppDispatch();
   if (!dataModel) {
     return null;
   }
 
   const { attributes } = dataModel;
+
+  const handleRebuildModel = (testSize: number) => {
+    dispatch(modelActions.rebuildModelRequest([dataModel.id, testSize]));
+  };
 
   return (
     <>
@@ -60,7 +66,7 @@ export default function StatisticBox() {
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
                 <Box sx={{ width: '49%' }}>
                   <Typography variant="h6">{attributes?.exit_percentage}%</Typography>
-                  <Typography variant="body2">Marked as exit</Typography>
+                  <Typography variant="body2">Marked as churn</Typography>
                 </Box>
                 <Box sx={{ width: '49%' }}>
                   <Typography variant="h6">{attributes?.stay_percentage}%</Typography>
@@ -79,8 +85,12 @@ export default function StatisticBox() {
             }}
           >
             <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button variant="contained">Rebuild 70/30</Button>
-              <Button variant="contained">Rebuild 90/10</Button>
+              <Button variant="contained" onClick={() => handleRebuildModel(0.3)}>
+                Rebuild 70/30
+              </Button>
+              <Button variant="contained" onClick={() => handleRebuildModel(0.1)}>
+                Rebuild 90/10
+              </Button>
             </Box>
 
             <Typography

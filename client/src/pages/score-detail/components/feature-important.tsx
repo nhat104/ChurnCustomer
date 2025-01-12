@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Divider } from '@nextui-org/react';
 
-import { Box, Dialog, DialogContent, DialogTitle, Typography } from '@mui/material';
+import { Box, Dialog, DialogContent, DialogTitle, Grid, Typography } from '@mui/material';
 
 import { useAppDispatch, useAppSelector } from 'src/store/hooks';
 
@@ -59,24 +59,58 @@ export function FeatureImportant({
         <Box
           sx={{
             display: 'flex',
-            mt: 2,
-            px: 2,
-            '& p': {
-              fontSize: '0.875rem',
-              mb: 2,
-            },
+            mt: 4,
+            px: 4,
+            '& p': { fontSize: '0.875rem' },
           }}
         >
-          <Box sx={{ width: '50%' }}>
+          {/* <Box sx={{ width: '20%' }}>
             {dataScoreResult?.interpretation?.map((scoreResult, index) => (
               <Typography key={index}>{scoreResult[0]}</Typography>
+            ))}
+          </Box>
+          <Box sx={{ width: '30%' }}>
+            {dataScoreResult?.interpretation?.map((scoreResult, index) => (
+              <Box sx={{ height: 36, '& div': { width: 120 * (scoreResult[0] ?? 0) } }} key={index}>
+                <div className="h-1 bg-gradient-to-r from-blue-300 to-blue-600 rounded-md" />
+              </Box>
             ))}
           </Box>
           <Box sx={{ width: '50%' }}>
             {dataScoreResult?.interpretation?.map((scoreResult, index) => (
               <Typography key={index}>{scoreResult[1]}</Typography>
             ))}
-          </Box>
+          </Box> */}
+          <Grid container spacing={2}>
+            {dataScoreResult?.interpretation?.map((scoreResult, index) => (
+              <Grid key={index} container spacing={2} alignItems="center" sx={{ height: 56 }}>
+                <Grid item xs={2}>
+                  <Typography>{scoreResult[0]}</Typography>
+                </Grid>
+                <Grid
+                  item
+                  xs={4}
+                  sx={{
+                    '& div': {
+                      width: `${Math.abs(scoreResult[1] ?? 0) / 2}%`,
+                      ml: scoreResult[1] > 0 ? '50%' : 0,
+                      mr: scoreResult[1] > 0 ? 0 : '50%',
+                      justifySelf: scoreResult[1] > 0 ? 'flex-start' : 'flex-end',
+                    },
+                  }}
+                >
+                  <div
+                    className={`h-1 
+                    ${scoreResult[1] > 0 ? 'bg-gradient-to-r from-blue-300 to-blue-600' : 'bg-gradient-to-r from-red-300 to-red-600'}
+                    rounded-md`}
+                  />
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography>{scoreResult[2]}</Typography>
+                </Grid>
+              </Grid>
+            ))}
+          </Grid>
         </Box>
       </DialogContent>
     </Dialog>

@@ -1,19 +1,21 @@
-import { useEffect, useState } from 'react';
+import { type Dispatch, type SetStateAction, useEffect, useState } from 'react';
 import { Tooltip, useDisclosure, Slider, type SliderValue } from '@nextui-org/react';
 
 import { Box, Card, Typography, CardContent } from '@mui/material';
 
-import { useAppSelector } from 'src/store/hooks';
+import { useAppDispatch, useAppSelector } from 'src/store/hooks';
 
 import { Iconify } from 'src/components/iconify';
 
 import CutoffModal from './cutoff-modal';
+import { modelActions } from '../../slice';
 import { selectModel } from '../../slice/selectors';
 
 // ----------------------------------------------------------------------
 
 interface CutoffBoxProps {
-  _cutoffValue: number;
+  cutoffValue: SliderValue;
+  setCutoffValue: Dispatch<SetStateAction<SliderValue>>;
 }
 
 interface ConfusionMatrix {
@@ -23,9 +25,8 @@ interface ConfusionMatrix {
   fn: number;
 }
 
-export default function CutoffBox({ _cutoffValue }: CutoffBoxProps) {
+export default function CutoffBox({ cutoffValue, setCutoffValue }: CutoffBoxProps) {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
-  const [cutoffValue, setCutoffValue] = useState<SliderValue>(_cutoffValue);
   const [confusionMatrix, setConfusionMatrix] = useState<ConfusionMatrix>({
     tp: 0,
     tn: 0,
@@ -33,6 +34,7 @@ export default function CutoffBox({ _cutoffValue }: CutoffBoxProps) {
     fn: 0,
   });
   const { dataModel } = useAppSelector(selectModel);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     if (!dataModel || !dataModel.attributes) return;
@@ -64,6 +66,15 @@ export default function CutoffBox({ _cutoffValue }: CutoffBoxProps) {
 
   const { attributes } = dataModel;
 
+  const handleUpdateModel = (cutoff: SliderValue) => {
+    dispatch(
+      modelActions.updateModelRequest({
+        id: dataModel.id,
+        body: { cutoff_selection: Number(cutoff) },
+      })
+    );
+  };
+
   return (
     <>
       <Card sx={{ pb: '6px' }}>
@@ -83,6 +94,7 @@ export default function CutoffBox({ _cutoffValue }: CutoffBoxProps) {
               maxValue={1}
               value={cutoffValue}
               onChange={setCutoffValue}
+              onChangeEnd={handleUpdateModel}
               disableThumbScale
               classNames={{
                 // base: 'max-w-md gap-3',
@@ -127,14 +139,14 @@ export default function CutoffBox({ _cutoffValue }: CutoffBoxProps) {
           >
             <Box sx={{ width: '49%' }}>
               <Typography variant="h6">{confusionMatrix.tp + confusionMatrix.fp}</Typography>
-              <Typography variant="body2">will exit</Typography>
+              <Typography variant="body2">will churn</Typography>
               <Typography variant="body2" component="span" sx={{ mr: 1 }}>
                 {confusionMatrix.tp} / {confusionMatrix.fp}
               </Typography>
               <Tooltip
                 className="max-w-52"
                 placement="bottom-start"
-                content="Ratio of correctly exited to incorrectly exited"
+                content="Ratio of correctly churned to incorrectly churned"
               >
                 <Iconify width={14} icon="eva:question-mark-circle-outline" />
               </Tooltip>

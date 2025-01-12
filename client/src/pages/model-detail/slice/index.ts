@@ -8,9 +8,15 @@ import type { ModelDetail, ModelState, ModelUpdate, ScoresByModelRequest } from 
 export const initialState: ModelState = {
   loading: false,
   dataModel: undefined,
-  scoresByModel: [],
   deleteModelStatus: false,
   error: false,
+
+  loadingScores: false,
+  scoresByModel: [],
+  errorScores: false,
+
+  loadingUpdate: false,
+  errorUpdate: false,
 
   editNameMode: false,
 };
@@ -36,18 +42,31 @@ const slice = createSlice({
       state.error = true;
     },
 
-    updateModelRequest(state, action: PayloadAction<{ id: number; body: ModelUpdate }>) {
+    rebuildModelRequest(state, action: PayloadAction<[number, number]>) {
       state.loading = true;
       state.error = false;
     },
-    updateModelSuccess(state, action: PayloadAction<ModelDetail>) {
+    rebuildModelSuccess(state, action: PayloadAction<ModelDetail>) {
       state.loading = false;
       state.dataModel = action.payload;
+    },
+    rebuildModelError(state) {
+      state.loading = false;
+      state.error = true;
+    },
+
+    updateModelRequest(state, action: PayloadAction<{ id: number; body: ModelUpdate }>) {
+      state.loadingUpdate = true;
+      state.errorUpdate = false;
+    },
+    updateModelSuccess(state, action: PayloadAction<ModelDetail>) {
+      state.loadingUpdate = false;
+      state.dataModel = { ...state.dataModel, ...action.payload };
       state.editNameMode = false;
     },
     updateModelError(state) {
-      state.loading = false;
-      state.error = true;
+      state.loadingUpdate = false;
+      state.errorUpdate = true;
     },
 
     deleteModelRequest(state, action: PayloadAction<number>) {
@@ -64,16 +83,16 @@ const slice = createSlice({
     },
 
     scoresByModelRequest(state, action: PayloadAction<ScoresByModelRequest>) {
-      state.loading = true;
-      state.error = false;
+      state.loadingScores = true;
+      state.errorScores = false;
     },
     scoreByModelSuccess(state, action: PayloadAction<ScoreHistoryResponse[]>) {
-      state.loading = false;
+      state.loadingScores = false;
       state.scoresByModel = action.payload;
     },
     scoreByModelError(state) {
-      state.loading = false;
-      state.error = true;
+      state.loadingScores = false;
+      state.errorScores = true;
     },
 
     resetModel(state) {

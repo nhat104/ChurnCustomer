@@ -36,6 +36,7 @@ import { TableEmptyRows, useTable } from 'src/components/table';
 import { scoreResultActions } from './slice';
 import MoreAction from './components/more-action';
 import { selectScoreResult } from './slice/selectors';
+import { selectAuth } from '../sign-in/slice/selectors';
 import {
   applyFilter,
   emptyRows,
@@ -53,10 +54,14 @@ export default function ScoreDetail() {
   const [openPopover, setOpenPopover] = useState<HTMLDivElement | null>(null);
   const inputNameRef = useRef<HTMLInputElement | null>(null);
 
-  const table = useTable<ScoreResultResponse>({ _orderBy: 'score', _order: 'desc' });
+  const table = useTable<ScoreResultResponse>({
+    _orderBy: 'score',
+    _order: 'desc',
+  });
   const router = useRouter();
 
   const { loading, dataScoreHistory, editNameMode } = useAppSelector(selectScoreResult);
+  const { dataAuth } = useAppSelector(selectAuth);
   const dispatch = useAppDispatch();
 
   const handleBackRoute = useCallback(() => {
@@ -173,7 +178,7 @@ export default function ScoreDetail() {
                     records
                   </Typography>
                   <Typography variant="body2">
-                    {dataScoreHistory.number_stay} stay | {dataScoreHistory.number_exit} exit
+                    {dataScoreHistory.number_stay} stay | {dataScoreHistory.number_exit} churn
                   </Typography>
                 </Box>
                 <Box onClick={handleDetailModel} sx={{ cursor: 'pointer' }}>
@@ -187,7 +192,7 @@ export default function ScoreDetail() {
                   <Typography variant="body2">{dataScoreHistory?.ml_model?.filename}</Typography>
                 </Box>
                 <Box>
-                  <Typography variant="body1">mmnhat666@gmail.com</Typography>
+                  <Typography variant="body1">{dataAuth?.user?.email}</Typography>
                   <Typography variant="body2">
                     {fDateTime(dataScoreHistory?.ml_model?.created_at)}
                     <span className="ml-4">Time taken 1.53 s.</span>
@@ -259,10 +264,11 @@ export default function ScoreDetail() {
                       { id: 'row', label: 'Row' },
                       { id: 'name', label: 'Name' },
                       { id: 'score', label: 'Score' },
-                      { id: '', width: 140 },
+                      { id: '', width: 120 },
                       { id: 'resolution', label: 'Decision' },
                     ]}
                     rows={table.rowsPerPage + 1}
+                    cutoffValue={dataScoreHistory?.cutoff_selection}
                   />
                   <TableBody>
                     {dataFiltered
@@ -301,8 +307,6 @@ export default function ScoreDetail() {
       ) : (
         loading && <Loading />
       )}
-
-      {/* <FeatureImportant isOpen={isOpen} onOpenChange={onOpenChange} /> */}
     </>
   );
 }

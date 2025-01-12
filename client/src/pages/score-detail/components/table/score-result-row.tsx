@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Progress } from '@nextui-org/react';
 
 import { TableCell, TableRow } from '@mui/material';
 
@@ -34,8 +33,12 @@ export function ScoreTableRow({ index, row }: ScoreTableRowProps) {
 
         <TableCell>{row.score}</TableCell>
 
-        <TableCell component="th" scope="row">
-          <Progress
+        <TableCell
+          component="th"
+          scope="row"
+          sx={{ p: 0, '& div': { width: 120 * (row.score ?? 0) } }}
+        >
+          {/* <Progress
             size="sm"
             radius="sm"
             aria-label="cutoff"
@@ -45,10 +48,11 @@ export function ScoreTableRow({ index, row }: ScoreTableRowProps) {
               indicator: 'bg-gradient-to-r from-blue-300 to-blue-600',
             }}
             value={(row.score ?? 0) * 100}
-          />
+          /> */}
+          <div className="h-1 bg-gradient-to-r from-blue-300 to-blue-600 rounded-md" />
         </TableCell>
 
-        <TableCell>{row.resolution}</TableCell>
+        <TableCell sx={{ pl: 8 }}>{row.resolution}</TableCell>
       </TableRow>
 
       <FeatureImportant

@@ -14,6 +14,7 @@ export interface ScoreHistoryResponse {
   status?: string;
   number_stay?: number;
   number_exit?: number;
+  cutoff_selection?: number;
   ml_model?: ModelDetail;
   score_results: ScoreResultResponse[];
   created_at?: string;

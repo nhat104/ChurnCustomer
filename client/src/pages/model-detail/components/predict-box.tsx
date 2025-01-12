@@ -9,7 +9,11 @@ import { dashboardActions } from 'src/pages/dashboard/slice';
 
 // ----------------------------------------------------------------------
 
-export default function PredictBox() {
+interface PredictBoxProps {
+  cutoffValue: number;
+}
+
+export default function PredictBox({ cutoffValue }: PredictBoxProps) {
   const { modelId } = useParams<{ modelId: string }>();
 
   const dispatch = useAppDispatch();
@@ -21,6 +25,7 @@ export default function PredictBox() {
     const formData = new FormData();
     if (file && modelId) {
       formData.append('data_file', file);
+      formData.append('cutoff_selection', cutoffValue.toString());
       dispatch(
         dashboardActions.predictRequest({
           modelId,
@@ -56,13 +61,20 @@ export default function PredictBox() {
   return (
     <Card onDrop={handleDrop} onDragOver={(event) => event.preventDefault()}>
       <CardContent sx={{ textAlign: 'center' }}>
-        <Typography variant="h6" sx={{ mb: 3 }}>
+        <Typography variant="h6" sx={{ mb: 2.5 }}>
           Start Predicting
         </Typography>
 
-        <Box sx={{ mt: 9, mb: 4 }}>
+        <Box>
           <form onSubmit={handleSubmit}>
             {/* <input type="hidden" name='_csrf' /> */}
+            <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+              The system will use the left
+              <br />
+              cutoff selection as the
+              <br />
+              prediction threshold
+            </Typography>
 
             <Button
               component="label"

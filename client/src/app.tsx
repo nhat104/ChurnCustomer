@@ -1,5 +1,7 @@
 import 'src/global.css';
 
+import { NextUIProvider } from '@nextui-org/react';
+
 import { Router } from 'src/routes/sections';
 
 import { useScrollToTop } from 'src/hooks/use-scroll-to-top';
@@ -13,7 +15,9 @@ export default function App() {
 
   return (
     <ThemeProvider>
-      <Router />
+      <NextUIProvider id="root">
+        <Router />
+      </NextUIProvider>
     </ThemeProvider>
   );
 }

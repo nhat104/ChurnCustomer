@@ -1,4 +1,4 @@
-import { Box, Divider, Typography } from '@mui/material';
+import { Box, Divider, Link, Typography } from '@mui/material';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -26,10 +26,11 @@ export function FooterSection() {
         <Typography variant="body2" component="span" sx={{ mr: 1 }}>
           No data? Try one of these:
         </Typography>
-        <Typography variant="body2" component="a">
-          Credits.xls
+
+        <Link variant="body2" href="/assets/data/Churn_Modelling.csv" download color="inherit">
+          Churn Customers.csv
           <Iconify width={18} icon="iconoir:download" />
-        </Typography>
+        </Link>
         <Typography variant="body2" component="a">
           Brokerage.xls
           <Iconify width={18} icon="iconoir:download" />

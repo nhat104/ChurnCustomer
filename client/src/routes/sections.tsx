@@ -8,7 +8,7 @@ import { varAlpha } from 'src/theme/styles';
 import { AuthLayout } from 'src/layouts/auth';
 import { useAppSelector } from 'src/store/hooks';
 import { DashboardLayout } from 'src/layouts/dashboard';
-import { selectLogin } from 'src/pages/sign-in/slice/selectors';
+import { selectAuth } from 'src/pages/sign-in/slice/selectors';
 
 // ----------------------------------------------------------------------
 
@@ -18,10 +18,8 @@ export const ModelDetailPage = lazy(() => import('src/pages/model-detail'));
 export const ScoreHistoryPage = lazy(() => import('src/pages/score-history'));
 export const ScoreDetailPage = lazy(() => import('src/pages/score-detail'));
 // export const MonitoringPage = lazy(() => import('src/pages/monitoring'));
-export const HomePage = lazy(() => import('src/pages/home'));
-export const BlogPage = lazy(() => import('src/pages/blog'));
 export const SignInPage = lazy(() => import('src/pages/sign-in'));
-export const ProductsPage = lazy(() => import('src/pages/products'));
+export const SignUpPage = lazy(() => import('src/pages/sign-up'));
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
 
 // ----------------------------------------------------------------------
@@ -41,7 +39,7 @@ const renderFallback = (
 
 const AuthRoute = (props: { type: 'PUBLIC' | 'PRIVATE'; children: ReactElement }) => {
   const { type, children } = props;
-  const { dataAuth } = useAppSelector(selectLogin);
+  const { dataAuth } = useAppSelector(selectAuth);
 
   if (type === 'PRIVATE' && !dataAuth?.access_token) {
     return <Navigate to="/sign-in" />;
@@ -79,9 +77,6 @@ export function Router() {
           ],
         },
         // { path: 'monitoring', element: <MonitoringPage /> },
-        { path: 'home', element: <HomePage /> },
-        { path: 'products', element: <ProductsPage /> },
-        { path: 'blog', element: <BlogPage /> },
       ],
     },
     {
@@ -89,6 +84,14 @@ export function Router() {
       element: (
         <AuthLayout>
           <SignInPage />
+        </AuthLayout>
+      ),
+    },
+    {
+      path: 'sign-up',
+      element: (
+        <AuthLayout>
+          <SignUpPage />
         </AuthLayout>
       ),
     },

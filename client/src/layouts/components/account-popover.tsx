@@ -16,7 +16,7 @@ import { useRouter, usePathname } from 'src/routes/hooks';
 
 import { _myAccount } from 'src/_mock';
 import { useAppDispatch } from 'src/store/hooks';
-import { loginActions } from 'src/pages/sign-in/slice';
+import { authActions } from 'src/pages/sign-in/slice';
 
 // ----------------------------------------------------------------------
 
@@ -54,7 +54,7 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
   );
 
   const handleLogout = () => {
-    dispatch(loginActions.logout());
+    dispatch(authActions.logout());
     router.replace('/sign-in');
   };
 

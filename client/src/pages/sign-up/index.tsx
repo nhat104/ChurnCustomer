@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { useEffect, useState, type FormEvent } from 'react';
 
 import InputAdornment from '@mui/material/InputAdornment';
-import { Box, Button, IconButton, TextField, Link as MuiLink, Typography } from '@mui/material';
+import { Box, Button, IconButton, TextField, Typography } from '@mui/material';
 
 import { useRouter } from 'src/routes/hooks';
 
@@ -14,14 +14,16 @@ import { Alert } from 'src/components/alert';
 import { Iconify } from 'src/components/iconify';
 import { Loading } from 'src/components/loading';
 
-import { selectAuth } from './slice/selectors';
-import { authActions as actions } from './slice';
+import { selectAuth } from '../sign-in/slice/selectors';
+import { authActions as actions } from '../sign-in/slice';
 
 // ----------------------------------------------------------------------
 
-export default function SigninPage() {
+export default function SignupPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [message, setMessage] = useState('');
   const [openAlert, setOpenAlert] = useState<boolean>(false);
 
   const { loading, dataAuth, error } = useAppSelector(selectAuth);
@@ -32,10 +34,21 @@ export default function SigninPage() {
     const formData = new FormData(event.currentTarget);
 
     const formValues = {
+      first_name: formData.get('firstName') as string,
+      last_name: formData.get('lastName') as string,
       email: formData.get('email') as string,
       password: formData.get('password') as string,
+      confirmPassword: formData.get('confirmPassword') as string,
     };
-    dispatch(actions.loginRequest(formValues));
+    if (formValues.password !== formValues.confirmPassword) {
+      setMessage('Password and confirm password do not match');
+      setOpenAlert(true);
+      return;
+    }
+
+    const { confirmPassword, ...signupData } = formValues;
+
+    dispatch(actions.signupRequest(signupData));
   };
 
   useEffect(() => {
@@ -47,17 +60,19 @@ export default function SigninPage() {
   useEffect(() => {
     if (error) {
       setOpenAlert(true);
+      setMessage(error);
+      dispatch(actions.resetAuth());
     }
-  }, [error]);
+  }, [dispatch, error]);
 
   return (
     <>
       <Helmet>
-        <title>{`Sign in - ${CONFIG.appName}`}</title>
+        <title>{`Sign up - ${CONFIG.appName}`}</title>
       </Helmet>
 
       <Box gap={1.5} display="flex" flexDirection="column" alignItems="center" sx={{ mb: 5 }}>
-        <Typography variant="h5">Sign in</Typography>
+        <Typography variant="h5">Sign up</Typography>
         <Typography
           variant="body2"
           color="text.secondary"
@@ -70,8 +85,10 @@ export default function SigninPage() {
             },
           }}
         >
-          Don’t have an account?
-          <Link to="/sign-up">Get started</Link>
+          Already have an account?&nbsp;
+          <Link to="/sign-in" color="inherit">
+            Sign in
+          </Link>
         </Typography>
       </Box>
 
@@ -82,16 +99,30 @@ export default function SigninPage() {
       >
         <TextField
           fullWidth
+          name="firstName"
+          label="First Name"
+          defaultValue="Mai Minh"
+          InputLabelProps={{ shrink: true }}
+          sx={{ mb: 3 }}
+        />
+
+        <TextField
+          fullWidth
+          name="lastName"
+          label="Last Name"
+          defaultValue="Nhat"
+          InputLabelProps={{ shrink: true }}
+          sx={{ mb: 3 }}
+        />
+
+        <TextField
+          fullWidth
           name="email"
           label="Email address"
           defaultValue="nhatmm@gmail.com"
           InputLabelProps={{ shrink: true }}
           sx={{ mb: 3 }}
         />
-
-        <MuiLink variant="body2" color="inherit" sx={{ mb: 1.5 }}>
-          Forgot password?
-        </MuiLink>
 
         <TextField
           fullWidth
@@ -112,8 +143,29 @@ export default function SigninPage() {
           sx={{ mb: 3 }}
         />
 
+        <TextField
+          fullWidth
+          name="confirmPassword"
+          label="Confirm Password"
+          defaultValue="123456"
+          InputLabelProps={{ shrink: true }}
+          type={showConfirmPassword ? 'text' : 'password'}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end">
+                  <Iconify
+                    icon={showConfirmPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'}
+                  />
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+          sx={{ mb: 3 }}
+        />
+
         <Button fullWidth size="large" type="submit" color="inherit" variant="contained">
-          Sign in
+          Sign up
         </Button>
       </Box>
 
@@ -121,7 +173,7 @@ export default function SigninPage() {
       <Alert
         open={openAlert}
         onClose={() => setOpenAlert(false)}
-        message="Incorrect email or password"
+        message={message}
         severity="error"
       />
     </>

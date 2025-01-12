@@ -1,8 +1,8 @@
 /* --- STATE --- */
-export interface LoginState {
+export interface AuthState {
   loading: boolean;
   dataAuth?: DataAuth;
-  error: boolean;
+  error: string;
 }
 
 export interface DataAuth {
@@ -11,7 +11,14 @@ export interface DataAuth {
   user?: UserInfo;
 }
 
-export interface AuthRequest {
+export interface SigninRequest {
+  email: string;
+  password: string;
+}
+
+export interface SignupRequest {
+  first_name: string;
+  last_name: string;
   email: string;
   password: string;
 }

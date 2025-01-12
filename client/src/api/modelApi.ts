@@ -19,6 +19,11 @@ export const modelApi = {
     });
   },
 
+  rebuild(id: number | string, test_size: number) {
+    const url = `model/${id}/rebuild?test_size=${test_size}`;
+    return baseApiRequest.post(url);
+  },
+
   getOne(id: number | string) {
     const url = `model/${id.toString()}`;
     return baseApiRequest.get(url);

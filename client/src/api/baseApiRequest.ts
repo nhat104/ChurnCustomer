@@ -29,7 +29,7 @@ baseApiRequest.interceptors.response.use(
     if (error && error.response && error.response.status === 401) {
       // remove token
       // console.log(error.response.data);
-      store.dispatch({ type: 'login/logout' });
+      store.dispatch({ type: 'auth/logout' });
     }
     throw error;
   }

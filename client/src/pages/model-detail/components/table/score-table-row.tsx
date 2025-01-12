@@ -68,14 +68,14 @@ export function ScoreTableRow({ row, selected, onSelectRow }: ScoreTableRowProps
         <TableCell>
           {(row.number_stay ?? 0) + (row.number_exit ?? 0)} records
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            {row.number_stay} stay | {row.number_exit} exit
+            {row.number_stay} stay | {row.number_exit} churn
           </Typography>
         </TableCell>
 
         <TableCell>
           {dataModel?.name}
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            Cutoff selection {dataModel?.cutoff_selection}
+            Cutoff selection {row?.cutoff_selection}
           </Typography>
         </TableCell>
 

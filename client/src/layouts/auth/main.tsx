@@ -25,6 +25,7 @@ export function Main({ sx, children, layoutQuery, ...other }: MainProps) {
         display: 'flex',
         flexDirection: 'column',
         bgcolor: 'background.default',
+        // maxWidth: `var(--layout-${pathname.slice(1).replace('-', '')}-content-width)`,
         maxWidth: 'var(--layout-auth-content-width)',
       }}
     >

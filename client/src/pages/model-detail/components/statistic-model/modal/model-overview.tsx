@@ -35,14 +35,14 @@ export function ModelOverview() {
             </Box>
             <Box>
               <Typography variant="h6">{attributes?.exit_percentage}%</Typography>
-              <Typography variant="body2">Mark as exit</Typography>
+              <Typography variant="body2">Mark as churn</Typography>
             </Box>
             <Box>
               <Typography variant="h6">{attributes?.stay_percentage}%</Typography>
               <Typography variant="body2">Marked as stay</Typography>
             </Box>
             <Box>
-              <Typography variant="h6">9.00%</Typography>
+              <Typography variant="h6">{attributes?.exit_percentage}%</Typography>
               <Typography variant="body2">NLP by source data</Typography>
             </Box>
           </Box>

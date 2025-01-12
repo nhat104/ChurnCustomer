@@ -1,10 +1,11 @@
 import { Modal, ModalBody, ModalContent } from '@nextui-org/react';
 
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 
 import { fDateTime } from 'src/utils/format-time';
 
 import { useAppSelector } from 'src/store/hooks';
+import { selectAuth } from 'src/pages/sign-in/slice/selectors';
 import { selectModel } from 'src/pages/model-detail/slice/selectors';
 
 import { RocAuc } from './roc-auc';
@@ -22,6 +23,7 @@ interface StatisticModalProps {
 
 export default function StatisticModal({ isOpen, onOpenChange }: StatisticModalProps) {
   const { dataModel } = useAppSelector(selectModel);
+  const { dataAuth } = useAppSelector(selectAuth);
 
   return (
     <Modal
@@ -36,13 +38,21 @@ export default function StatisticModal({ isOpen, onOpenChange }: StatisticModalP
             <Typography variant="h4">{dataModel?.name}</Typography>
             <Box sx={{ display: 'flex' }}>
               <Typography>
-                {dataModel?.filename} by mmnhat666@gmail.com , {fDateTime(dataModel?.created_at)}
+                {dataModel?.filename} by {dataAuth?.user?.email} ,{' '}
+                {fDateTime(dataModel?.created_at)}
               </Typography>
-              <Typography sx={{ ml: 4 }}>Time taken 8.57 s.</Typography>
+              <Typography sx={{ ml: 4 }}>
+                Time taken{' '}
+                {(
+                  Number(dataModel?.attributes?.preprocess_time) +
+                  Number(dataModel?.attributes?.train_time)
+                ).toFixed(2)}{' '}
+                s.
+              </Typography>
             </Box>
-            <Button variant="contained" size="large" sx={{ width: 300 }}>
+            {/* <Button variant="contained" size="large" sx={{ width: 300 }}>
               Download evaluation report
-            </Button>
+            </Button> */}
 
             <ModelOverview />
 

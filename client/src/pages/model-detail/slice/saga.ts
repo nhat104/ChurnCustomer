@@ -39,6 +39,40 @@ function* modelRequestSaga(
   }
 }
 
+function* rebuildModelSaga(
+  action: ReturnType<typeof actions.rebuildModelRequest>
+): Generator<any, void, any> {
+  try {
+    const res = yield call(modelApi.rebuild, action.payload[0], action.payload[1]);
+    if (res?.data?.attributes) {
+      res.data.attributes = res.data.attributes.reduce(
+        (acc: any, cur: { name: string; value: string }) => {
+          if (
+            cur.name === 'density_distribution' ||
+            cur.name === 'ks_score_series' ||
+            cur.name === 'roc_auc_series' ||
+            cur.name === 'y_test' ||
+            cur.name === 'y_pred'
+          ) {
+            acc[cur.name] = JSON.parse(cur.value.replace(/'/g, '"')) ?? [];
+            return acc;
+          }
+          if (cur.name === 'ks_score_attr') {
+            acc[cur.name] = JSON.parse(cur.value.replace(/'/g, '"')) ?? {};
+            return acc;
+          }
+          acc[cur.name] = cur.value;
+          return acc;
+        },
+        {}
+      );
+    }
+    yield put(actions.rebuildModelSuccess(res?.data));
+  } catch (error) {
+    yield put(actions.rebuildModelError());
+  }
+}
+
 function* updateModelSaga(
   action: ReturnType<typeof actions.updateModelRequest>
 ): Generator<any, void, any> {
@@ -74,6 +108,7 @@ function* scoresByModelRequestSaga(
 
 export function* modelSaga() {
   yield takeLatest(actions.modelRequest.type, modelRequestSaga);
+  yield takeLatest(actions.rebuildModelRequest.type, rebuildModelSaga);
   yield takeLatest(actions.updateModelRequest.type, updateModelSaga);
   yield takeLatest(actions.deleteModelRequest.type, deleteModelSaga);
   yield takeLatest(actions.scoresByModelRequest.type, scoresByModelRequestSaga);

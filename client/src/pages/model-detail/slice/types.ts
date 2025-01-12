@@ -5,9 +5,15 @@ import type { ScoreHistoryResponse } from 'src/pages/score-history/slice/types';
 export interface ModelState {
   loading: boolean;
   dataModel?: ModelDetail;
-  scoresByModel: ScoreHistoryResponse[];
   deleteModelStatus: boolean;
   error: boolean;
+
+  loadingScores: boolean;
+  scoresByModel: ScoreHistoryResponse[];
+  errorScores: boolean;
+
+  loadingUpdate: boolean;
+  errorUpdate: boolean;
 
   editNameMode: boolean;
 }
@@ -53,6 +59,8 @@ interface ModelAttributes {
   ks_score_attr?: KSScoreAttribute;
   y_test?: number[];
   y_pred?: number[];
+  preprocess_time?: number;
+  train_time?: number;
 }
 
 export interface KSScoreAttribute {
@@ -64,6 +72,7 @@ export interface KSScoreAttribute {
 
 export interface ModelUpdate {
   name?: string;
+  cutoff_selection?: number;
 }
 
 export interface ScoresByModelRequest {
