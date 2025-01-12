@@ -42,7 +42,7 @@ class UserExists(BaseException):
 
 
 class InvalidCredentials(BaseException):
-    """User has provided wrong username or password"""
+    """User has provided wrong email or password"""
 
     pass
 
@@ -96,8 +96,8 @@ def register_all_errors(app: FastAPI):
         create_exception_handler(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={
-                "message": "Invalid username or password",
-                "error_code": "invalid_username_or_password",
+                "message": "Invalid email or password",
+                "error_code": "invalid_email_or_password",
             },
         ),
     )

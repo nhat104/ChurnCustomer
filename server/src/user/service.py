@@ -1,10 +1,9 @@
 from sqlmodel import select
 
-from common.algorithm import generate_password_hash
-
 from utils.database import SessionDep
 from utils.models import User
-from .schemas import UserCreate
+
+from .schemas import UserUpdate
 
 
 class UserService:
@@ -24,15 +23,11 @@ class UserService:
         user = self.get_user_by_email(email, session)
         return user is not None
 
-    def create_user(self, user_data: UserCreate, session: SessionDep):
-        # user_data_dict = user_data.model_dump()
-        # new_user = User(**user_data_dict)
-        # new_user.password_hash = generate_passwd_hash(user_data_dict["password"])
-        db_user = User.model_validate(user_data)
-        db_user.password = generate_password_hash(user_data.password)
-
-        session.add(db_user)
+    def update_user(self, email: str, user_data: UserUpdate, session: SessionDep):
+        user = self.get_user_by_email(email, session)
+        for field, value in user_data.model_dump(exclude_unset=True).items():
+            setattr(user, field, value)
+        session.add(user)
         session.commit()
-        session.refresh(db_user)
-
-        return db_user
+        session.refresh(user)
+        return user

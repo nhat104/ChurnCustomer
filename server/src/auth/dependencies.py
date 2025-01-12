@@ -1,7 +1,7 @@
 from fastapi import HTTPException, Request, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-from .utils import decode_token
+from common.algorithm import decode_token
 from utils.errors import InvalidToken, AccessTokenRequired
 
 

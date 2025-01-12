@@ -1,18 +1,7 @@
 from datetime import datetime
 from sqlmodel import SQLModel, Field
 
-
-class UserBase(SQLModel):
-    username: str
-    email: str | None = None
-    first_name: str | None = None
-    last_name: str | None = None
-
-
-class UserPublic(UserBase):
-    id: int
-    created_at: datetime
-    updated_at: datetime
+from user.schemas import UserBase
 
 
 class UserCreate(UserBase):
@@ -45,15 +34,9 @@ class UserLogin(SQLModel):
     }
 
 
-class LoginResponse(SQLModel):
+class AuthResponse(SQLModel):
+    status_code: int
     message: str
     access_token: str
     refresh_token: str
     user: UserBase
-
-
-class UserUpdate(UserBase):
-    first_name: str | None = None
-    last_name: str | None = None
-    email: str | None = None
-    password: str | None = None

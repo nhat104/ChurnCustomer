@@ -2,16 +2,15 @@ from datetime import timedelta
 from fastapi import Depends, status
 from fastapi.responses import JSONResponse
 
-
 from utils.database import SessionDep
 from utils.errors import UserExists, InvalidCredentials
 from utils.custom_api import APIResponse, CustomAPIRouter
+from common.algorithm import create_access_token, verify_password
+from user.schemas import UserPublic
 
-from .schemas import UserCreate, UserLogin, UserPublic, LoginResponse
+from .schemas import UserCreate, UserLogin, AuthResponse
 from .service import UserService
-from .utils import create_access_token, verify_password
 from .dependencies import AccessTokenBearer
-
 
 auth_router = CustomAPIRouter()
 user_service = UserService()
@@ -19,20 +18,41 @@ user_service = UserService()
 
 @auth_router.post(
     "/signup",
-    response_model=APIResponse[UserPublic],
+    response_model=AuthResponse,
     status_code=status.HTTP_201_CREATED,
 )
 def create_user_account(user_data: UserCreate, session: SessionDep):
-    username = user_data.username
-    user_exists = user_service.user_exists(username, session)
+    email = user_data.email
+    user_exists = user_service.user_exists(email, session)
     if user_exists:
         raise UserExists()
 
+    access_token = create_access_token(user_data={"email": email})
+    refresh_token = create_access_token(
+        user_data={"email": email},
+        expiry=timedelta(days=30),
+        refresh=True,
+    )
+
     new_user = user_service.create_user(user_data, session)
-    return APIResponse(status_code=201, data=new_user)
+    return JSONResponse(
+        content={
+            "status_code": 201,
+            "message": "User created",
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "user": {
+                "id": new_user.id,
+                "username": new_user.username,
+                "email": new_user.email,
+                "first_name": new_user.first_name,
+                "last_name": new_user.last_name,
+            },
+        }
+    )
 
 
-@auth_router.post("/login", response_model=LoginResponse)
+@auth_router.post("/login", response_model=AuthResponse)
 def login(login_data: UserLogin, session: SessionDep):
     email, password = login_data.email, login_data.password
 
@@ -53,6 +73,7 @@ def login(login_data: UserLogin, session: SessionDep):
 
     return JSONResponse(
         content={
+            "status_code": 200,
             "message": "Login successful",
             "access_token": access_token,
             "refresh_token": refresh_token,
@@ -65,16 +86,6 @@ def login(login_data: UserLogin, session: SessionDep):
             },
         }
     )
-
-
-@auth_router.get("/me", response_model=APIResponse[UserPublic])
-def get_user_me(
-    session: SessionDep,
-    token: dict = Depends(AccessTokenBearer()),
-):
-    email = token["user"]["email"]
-    user = user_service.get_user_by_email(email, session)
-    return APIResponse(data=user)
 
 
 # @auth_router.get("/refresh_token")

@@ -6,10 +6,10 @@ from sqlalchemy import Column, Text
 class User(SQLModel, table=True):
     __tablename__ = "user"
     id: int | None = Field(default=None, primary_key=True, unique=True)
-    username: str
+    username: str | None = None
     first_name: str | None = None
     last_name: str | None = None
-    email: str | None = None
+    email: str
     password: str
 
     ml_models: list["MLModel"] = Relationship(back_populates="user")
@@ -18,7 +18,7 @@ class User(SQLModel, table=True):
     updated_at: datetime = Field(default_factory=datetime.now)
 
     def __repr__(self) -> str:
-        return f"<User {self.username}>"
+        return f"<User {self.email}>"
 
 
 class MLModel(SQLModel, table=True):
@@ -54,6 +54,7 @@ class ScoreHistory(SQLModel, table=True):
     name: str
     number_exit: int
     number_stay: int
+    cutoff_selection: float = 0.5
     status: str
 
     ml_model_id: int = Field(foreign_key="ml_model.id")

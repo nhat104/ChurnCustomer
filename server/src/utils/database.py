@@ -5,7 +5,7 @@ from fastapi import Depends, FastAPI
 from sqlmodel import Session, SQLModel, create_engine, select
 
 from utils.models import User
-from auth.utils import generate_password_hash
+from common.algorithm import generate_password_hash
 from config import Config
 
 # Create the database engine

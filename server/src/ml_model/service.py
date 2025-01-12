@@ -19,6 +19,7 @@ from scipy.stats import gaussian_kde
 from utils.database import SessionDep
 from utils.models import MLModel, ModelAttribute
 from .schemas import MLModelUpdate
+import time
 
 
 class MLModelService:
@@ -72,8 +73,26 @@ class MLModelService:
         if not db_model:
             return None
         model_data = model.model_dump(exclude_unset=True)
+        attributes_data = model_data.pop("attributes", [])
         for key, value in model_data.items():
             setattr(db_model, key, value)
+
+        # Update model attributes
+        for attr_data in attributes_data:
+            attr = next(
+                (a for a in db_model.attributes if a.name == attr_data["name"]),
+                None,
+            )
+            if attr:
+                attr.value = attr_data["value"]
+            else:
+                new_attr = ModelAttribute(
+                    ml_model_id=model_id,
+                    name=attr_data["name"],
+                    value=attr_data["value"],
+                )
+                session.add(new_attr)
+
         session.add(db_model)
         session.commit()
         session.refresh(db_model)
@@ -90,6 +109,15 @@ class MLModelService:
         session.commit()
         return {"ok": True}
 
+    def delete_model_attributes(self, model_id: int, session: SessionDep):
+        statement = select(ModelAttribute).where(ModelAttribute.ml_model_id == model_id)
+        attributes = session.exec(statement).all()
+        for attr in attributes:
+            session.delete(attr)
+        session.commit()
+        return {"ok": True}
+
+    # return filename if the filename does not exist, otherwise return filename (n)
     def isFilenameExist(self, filename: str, user_id: int, session: SessionDep) -> str:
         # select all filename from MLModel where user_id = user_id
         statement = select(MLModel).where(
@@ -112,14 +140,16 @@ class MLModelService:
         user_folder = os.path.join("data", str(user_id))
         os.makedirs(user_folder, exist_ok=True)
 
-        # Save the file to the directory
         file_path = os.path.join(user_folder, data_file.filename)
         with open(file_path, "wb") as file_object:
             file_object.write(data_file.file.read())
 
         return file_path
 
-    def build_ml_model(self, file_path, file_ext: str, user_id: int):
+    def build_ml_model(self, file_path, file_ext: str, test_size: float):
+
+        start_time = time.time()
+
         # Load the data from the file
         df = None
         try:
@@ -155,7 +185,7 @@ class MLModelService:
         y = df[target_column]
 
         X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=0.3, random_state=42
+            X, y, test_size=test_size, random_state=42
         )
 
         # group columns by data type
@@ -164,13 +194,8 @@ class MLModelService:
         for col in X_train.columns:
             if pd.api.types.is_object_dtype(X_train[col]):
                 categorical_columns.append(col)
-            # if dtype is not object but only 2 unique values, it is also categorical
-            # elif X_train[col].nunique() == 2:
-            #     categorical_columns.append(col)
             elif pd.api.types.is_numeric_dtype(X_train[col]):
                 continuous_columns.append(col)
-        # X_train = X_train[continuous_columns + categorical_columns]
-        # X_test = X_test[continuous_columns + categorical_columns]
 
         # create a pipeline for preprocessing
         num_pipeline = Pipeline(
@@ -189,11 +214,15 @@ class MLModelService:
             ]
         )
 
+        preprocess_time = time.time() - start_time
+
         # create a pipeline for the model
         forest_reg = make_pipeline(
             preprocessing, RandomForestClassifier(random_state=42)
         )
         forest_reg.fit(X_train, y_train)
+
+        train_time = time.time() - start_time - preprocess_time
 
         # split file extension from the file_path
         file_path_name, _ = os.path.splitext(file_path)
@@ -204,19 +233,6 @@ class MLModelService:
 
         churn_pred = forest_reg.predict(X_test)
         churn_pred_prob = forest_reg.predict_proba(X_test)
-
-        # kdeplot = sns.kdeplot(x=churn_pred_prob[:, 1], hue=y_test, common_norm=False)
-        # kde_data_1 = kdeplot.get_lines()[0].get_data()
-        # kde_data_0 = kdeplot.get_lines()[1].get_data()
-
-        # kde_points_1 = list(zip(kde_data_1[0].tolist(), kde_data_1[1].tolist()))
-        # kde_points_1 = [
-        #     [round(x * 10, 1), round(y, 2)] for x, y in kde_points_1 if 0 <= x <= 1.2
-        # ]
-        # kde_points_0 = list(zip(kde_data_0[0].tolist(), kde_data_0[1].tolist()))
-        # kde_points_0 = [
-        #     [round(x * 10, 1), round(y, 2)] for x, y in kde_points_0 if 0 <= x <= 1.2
-        # ]
 
         # make data points for density distribution by classes chart
         marks = np.linspace(0, 1.2, 200).tolist()
@@ -318,6 +334,10 @@ class MLModelService:
             ModelAttribute(name="ks_score_series", value=str(ks_score_series)),
             ModelAttribute(name="ks_score_attr", value=str(ks_score_attr)),
             ModelAttribute(name="roc_auc_series", value=str(roc_auc_series)),
+            ModelAttribute(
+                name="preprocess_time", value=str(round(preprocess_time, 3))
+            ),
+            ModelAttribute(name="train_time", value=str(round(train_time, 3))),
         ]
 
         return "Finished", round(auc_score * 2 - 1, 2), attributes
@@ -340,6 +360,18 @@ class MLModelService:
         input_data_prepared = model.named_steps["columntransformer"].transform(
             input_data
         )
+        # # create a data with value the same as input_data if feature is numerical, and value the same as input_data_prepared if feature is categorical
+        # input_data_combined = pd.DataFrame(index=input_data.index)
+
+        # for col in input_data.columns:
+        #     if col in model.named_steps["columntransformer"].transformers_[0][2]:  # numerical columns
+        #         input_data_combined[col] = input_data[col]
+        #     else:  # categorical columns
+        #         transformed_col_names = model.named_steps["columntransformer"].transformers_[1][1].get_feature_names_out([col])
+        #         input_data_combined[transformed_col_names] = input_data_prepared[:, model.named_steps["columntransformer"].transformers_[1][2].index(col)]
+
+        # # input_data_prepared = input_data_combined
+
         feature_names = model.named_steps["columntransformer"].get_feature_names_out()
 
         # predictions = model.predict(input_data)
@@ -349,17 +381,41 @@ class MLModelService:
         explainer = shap.TreeExplainer(model.named_steps["randomforestclassifier"])
         shap_values = explainer.shap_values(input_data_prepared)
         shap_values = np.round(shap_values[:, :, 1], 5).tolist()
+        shap_values_max = np.max(np.abs(shap_values), axis=1)
+        shap_values_percentage = np.round(
+            shap_values / shap_values_max[:, None] * 100, 2
+        ).tolist()
 
         pred_probability = [
             (
                 name,
                 prob,
                 [
-                    [shap_value, feature]
-                    for feature, shap_value in zip(feature_names, shap_value)
+                    [shap_value, percentage, feature[5:]]
+                    for feature, shap_value, percentage in zip(
+                        feature_names, shap_value, percentage
+                    )
                 ],
             )
-            for name, prob, shap_value in zip(surname, pred_probability, shap_values)
+            for name, prob, shap_value, percentage in zip(
+                surname, pred_probability, shap_values, shap_values_percentage
+            )
         ]
+
+        # pred_probability = [
+        #     (
+        #         name,
+        #         prob,
+        #         [
+        #             [shap_value, percentage, feature[5:], value]
+        #             for feature, shap_value, percentage, value in zip(
+        #                 feature_names, shap_value, percentage, round(input_data_prepared[i])
+        #             )
+        #         ],
+        #     )
+        #     for i, (name, prob, shap_value, percentage) in enumerate(
+        #         zip(surname, pred_probability, shap_values, shap_values_percentage)
+        #     )
+        # ]
 
         return pred_probability

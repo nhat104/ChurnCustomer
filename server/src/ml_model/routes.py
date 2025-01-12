@@ -3,13 +3,14 @@ import numpy as np
 
 from datetime import datetime
 from typing import Annotated
-from fastapi import Query, Depends, status, UploadFile, File, HTTPException
+from fastapi import Query, Depends, status, UploadFile, File, Form, HTTPException
 from fastapi.responses import FileResponse
 
 from utils.database import SessionDep
 from utils.errors import ModelNotFound
 from utils.custom_api import CustomAPIRouter, APIResponse
 from auth.dependencies import AccessTokenBearer
+from file.file import FileHandler
 
 from score_history.schemas import ScoreHistoryPublic
 from score_history.service import ScoreHistoryService
@@ -51,25 +52,17 @@ async def upload_data_to_build_model(
 ):
     user_id = token["user"]["id"]
 
-    # Validate file MIME type
-    valid_mime_types = [
-        "text/csv",
-        "application/vnd.ms-excel",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    ]
-    if data_file.content_type not in valid_mime_types:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid file type. Only CSV and Excel files are allowed.",
-        )
+    # validate with FileHandler
+    file_handler = FileHandler(data_file)
+    file_handler.validate_table_file()
 
-    file_name, file_extension = os.path.splitext(data_file.filename)
+    file_name, file_extension = file_handler.split_file_name()
     name = ml_model_service.isFilenameExist(file_name, user_id, session)
 
-    file_path = ml_model_service.save_data_file(data_file, user_id)
+    file_path = file_handler.save_file_with_user_id(user_id)
 
     status, gini_index, attributes = ml_model_service.build_ml_model(
-        file_path=file_path, file_ext=file_extension, user_id=user_id
+        file_path=file_path, file_ext=file_extension, test_size=0.3
     )
 
     new_model = {
@@ -82,6 +75,45 @@ async def upload_data_to_build_model(
     }
     db_model = ml_model_service.create_model_by_user(new_model, session)
     return APIResponse(status_code=201, data=db_model)
+
+
+@ml_model_router.post(
+    "/{model_id}/rebuild",
+    status_code=status.HTTP_200_OK,
+    response_model=APIResponse[MLModelPublicWithAttributes],
+)
+def rebuild_model(
+    session: SessionDep,
+    model_id: int,
+    test_size: float = Query(0.3, ge=0, le=1.0),
+    token: dict = Depends(access_token_bearer),
+):
+    user_id = token["user"]["id"]
+    model = ml_model_service.get_model(model_id, user_id, session)
+    if not model:
+        raise ModelNotFound
+
+    filename = model.filename
+    file_name, file_extension = os.path.splitext(filename)
+    user_folder = os.path.join("data", str(user_id))
+    file_path = os.path.join(user_folder, filename)
+
+    status, gini_index, attributes = ml_model_service.build_ml_model(
+        file_path=file_path, file_ext=file_extension, test_size=test_size
+    )
+
+    rebuild_model = {
+        # "name": model.name,
+        # "filename": filename,
+        "status": status,
+        "predictive_power": gini_index,
+        # "user_id": user_id,
+        "attributes": attributes,
+    }
+    db_model = ml_model_service.update_model(
+        model_id, MLModelUpdate(**rebuild_model), user_id, session
+    )
+    return APIResponse(data=db_model)
 
 
 @ml_model_router.get(
@@ -108,30 +140,23 @@ async def upload_data_to_predict(
     model_id: int,
     session: SessionDep,
     data_file: UploadFile = File(...),
+    cutoff_selection: str = Form("0.5"),
     token: dict = Depends(access_token_bearer),
 ):
     user_id = token["user"]["id"]
+    cutoff_selection = float(cutoff_selection)
 
     model = ml_model_service.get_model(model_id, user_id, session)
     if not model:
         raise ModelNotFound
 
-    # Validate file MIME type
-    valid_mime_types = [
-        "text/csv",
-        "application/vnd.ms-excel",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    ]
-    if data_file.content_type not in valid_mime_types:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid file type. Only CSV and Excel files are allowed.",
-        )
+    # validate with FileHandler
+    file_handler = FileHandler(data_file)
+    file_handler.validate_table_file()
 
     model_path = ml_model_service.get_model_path(model_id, user_id, session)
 
     predictions = ml_model_service.predict_with_model(model_path, data=data_file.file)
-    cutoff_selection = 0.5
     score_results = score_result_service.predictions_to_list_score_result(
         predictions, cutoff_selection
     )
@@ -145,6 +170,7 @@ async def upload_data_to_predict(
         "ml_model_id": model_id,
         "number_exit": no_exit,
         "number_stay": len(predictions) - no_exit,
+        "cutoff_selection": cutoff_selection,
         "status": "Finished",
         "score_results": score_results,
     }

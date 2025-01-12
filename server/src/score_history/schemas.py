@@ -9,6 +9,7 @@ class ScoreHistoryBase(SQLModel):
     status: str
     number_exit: int
     number_stay: int
+    cutoff_selection: float
 
 
 class ScoreHistoryPublic(ScoreHistoryBase):

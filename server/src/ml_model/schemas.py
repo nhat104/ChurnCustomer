@@ -34,7 +34,9 @@ class MLModelUpdate(SQLModel):
     name: str | None = None
     cutoff_selection: float | None = None
     calculation: int | None = None
+    predictive_power: float | None = None
     last_score_time: datetime | None = None
+    attributes: list[ModelAttribute] | None = None
 
     model_config = {
         "json_schema_extra": {

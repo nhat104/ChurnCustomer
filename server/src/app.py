@@ -9,6 +9,7 @@ from middleware import register_middleware
 
 
 from auth.routes import auth_router
+from user.routes import user_router
 from ml_model.routes import ml_model_router
 from score_history.routes import score_history_router
 from score_result.routes import score_result_router
@@ -46,6 +47,7 @@ register_all_errors(app)
 register_middleware(app)
 
 app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
+app.include_router(user_router, prefix="/api/user", tags=["user"])
 app.include_router(ml_model_router, prefix="/api/model", tags=["ml_model"])
 app.include_router(score_history_router, prefix="/api/score", tags=["score_history"])
 app.include_router(
