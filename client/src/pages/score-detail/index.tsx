@@ -75,6 +75,7 @@ export default function ScoreDetail() {
   }, [dispatch, scoreId]);
 
   const handleDetailModel = () => {
+    if (!dataAuth?.user) return;
     router.push(`/model/${dataScoreHistory?.ml_model?.id}`);
   };
 
@@ -119,17 +120,23 @@ export default function ScoreDetail() {
                 >
                   Back
                 </Button>
-                <MoreAction
-                  options={[
-                    { icon: 'solar:star-outline', value: 'addFavorite', label: 'Add to favorite' },
-                    {
-                      icon: 'solar:pen-bold',
-                      value: 'editName',
-                      label: 'Edit name',
-                      onClick: handleEditName,
-                    },
-                  ]}
-                />
+                {dataAuth?.user && (
+                  <MoreAction
+                    options={[
+                      {
+                        icon: 'solar:star-outline',
+                        value: 'addFavorite',
+                        label: 'Add to favorite',
+                      },
+                      {
+                        icon: 'solar:pen-bold',
+                        value: 'editName',
+                        label: 'Edit name',
+                        onClick: handleEditName,
+                      },
+                    ]}
+                  />
+                )}
               </Box>
 
               {editNameMode ? (
@@ -154,9 +161,6 @@ export default function ScoreDetail() {
                   {dataScoreHistory.name}
                 </Typography>
               )}
-              {/* <Typography variant="h4" sx={{ mt: 1 }}>
-                {dataScoreHistory.name}
-              </Typography> */}
               <Typography variant="subtitle1" sx={{ color: 'primary.main', mt: 1, mb: 2 }}>
                 Scoring calculation ID {dataScoreHistory?.id}
               </Typography>
@@ -181,7 +185,10 @@ export default function ScoreDetail() {
                     {dataScoreHistory.number_stay} stay | {dataScoreHistory.number_exit} churn
                   </Typography>
                 </Box>
-                <Box onClick={handleDetailModel} sx={{ cursor: 'pointer' }}>
+                <Box
+                  onClick={handleDetailModel}
+                  sx={{ cursor: dataAuth?.user ? 'pointer' : 'default' }}
+                >
                   <Typography variant="body1">{dataScoreHistory?.ml_model?.name}</Typography>
                   <Typography variant="body2">
                     Cutoff selection {dataScoreHistory?.ml_model?.cutoff_selection}

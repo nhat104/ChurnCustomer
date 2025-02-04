@@ -1,4 +1,4 @@
-import type { Control} from 'react-hook-form';
+import type { Control } from 'react-hook-form';
 
 import { useController } from 'react-hook-form';
 
@@ -40,11 +40,7 @@ export default function RadioGroupField({
   });
 
   return (
-    <FormControl
-      disabled={disabled}
-      margin="normal"
-      component="fieldset"
-      error={invalid}>
+    <FormControl disabled={disabled} margin="normal" component="fieldset" error={invalid}>
       <FormLabel component="legend">{label}</FormLabel>
       <RadioGroup name={name} value={value} onChange={onChange} onBlur={onBlur}>
         {options.map((option) => (

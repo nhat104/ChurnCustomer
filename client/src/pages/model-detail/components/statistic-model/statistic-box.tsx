@@ -31,14 +31,14 @@ export default function StatisticBox() {
           <Box sx={{ display: 'flex' }}>
             <Box sx={{ mr: 4 }}>
               <Typography variant="h6" mb={2}>
-                Predictive Power
+                Gini Index
               </Typography>
               <CircularProgress
                 aria-label="score"
                 size="lg"
                 value={(dataModel?.predictive_power ?? 0) * 100}
                 color="primary"
-                valueLabel={dataModel?.predictive_power}
+                valueLabel={Number(dataModel?.predictive_power).toFixed(2)}
                 showValueLabel
                 classNames={{
                   svg: 'w-36 h-36 stroke-1',

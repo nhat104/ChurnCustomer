@@ -1,3 +1,4 @@
+import os
 from sqlmodel import select
 
 from utils.database import SessionDep
@@ -32,6 +33,26 @@ class ScoreHistoryService:
 
         return converted_result
 
+    def get_all_score_histories(
+        self, session: SessionDep, offset: int = 0, limit: int = 100
+    ):
+        statement = (
+            select(ScoreHistory, MLModel)
+            .join(MLModel)
+            .order_by(ScoreHistory.created_at)
+            .offset(offset)
+            .limit(limit)
+        )
+
+        result = session.exec(statement).all()
+
+        converted_result = []
+        for score_history, ml_model in result:
+            score_history.ml_model = ml_model
+            converted_result.append(score_history)
+
+        return converted_result
+
     def get_score_histories_by_ml_model_id(
         self, ml_model_id: int, session: SessionDep, offset: int = 0, limit: int = 100
     ):
@@ -45,12 +66,8 @@ class ScoreHistoryService:
         result = session.exec(statement).all()
         return result
 
-    def get_score_history(
-        self, score_history_id: int, user_id: int, session: SessionDep
-    ):
-        statement = select(ScoreHistory).where(
-            ScoreHistory.id == score_history_id, MLModel.user_id == user_id
-        )
+    def get_score_history(self, score_history_id: int, session: SessionDep):
+        statement = select(ScoreHistory).where(ScoreHistory.id == score_history_id)
         score_history = session.exec(statement).first()
         return score_history
 
@@ -70,7 +87,7 @@ class ScoreHistoryService:
         user_id: int,
         session: SessionDep,
     ):
-        db_score_history = self.get_score_history(score_history_id, user_id, session)
+        db_score_history = self.get_score_history(score_history_id, session)
         if not db_score_history:
             return None
         score_history_data = score_history.model_dump(exclude_unset=True)
@@ -84,7 +101,7 @@ class ScoreHistoryService:
     def delete_score_history(
         self, score_history_id: int, user_id: int, session: SessionDep
     ):
-        score_history = self.get_score_history(score_history_id, user_id, session)
+        score_history = self.get_score_history(score_history_id, session)
         if not score_history:
             return None
         ml_model = ml_model_service.get_model(
@@ -96,6 +113,13 @@ class ScoreHistoryService:
             user_id,
             session,
         )
+        file_path = score_history.file_path
+        folder_path = os.path.dirname(file_path)
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        if os.path.exists(folder_path):
+            os.rmdir(folder_path)
+
         session.delete(score_history)
         session.commit()
         return {"ok": True}

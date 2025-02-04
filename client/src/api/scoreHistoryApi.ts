@@ -10,6 +10,11 @@ export const scoreHistoryApi = {
     return baseApiRequest.get(url);
   },
 
+  getAllUser({ offset = 0, limit = 50 }: QueryParams) {
+    const url = `score/all?offset=${offset}&limit=${limit}`;
+    return baseApiRequest.get(url);
+  },
+
   getOne(id: string) {
     const url = `score/${id}`;
     return baseApiRequest.get(url);

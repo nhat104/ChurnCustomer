@@ -28,6 +28,7 @@ class ScoreHistoryPublicWithResult(ScoreHistoryPublic):
 
 
 class ScoreHistoryCreate(ScoreHistoryBase):
+    file_path: str
     ml_model_id: str
 
 

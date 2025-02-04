@@ -54,6 +54,7 @@ class ScoreHistory(SQLModel, table=True):
     name: str
     number_exit: int
     number_stay: int
+    file_path: str
     cutoff_selection: float = 0.5
     status: str
 

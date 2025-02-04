@@ -21,7 +21,6 @@ access_token_bearer = AccessTokenBearer()
 def read_score_result(
     score_result_id: int,
     session: SessionDep,
-    _: dict = Depends(access_token_bearer),
 ):
     score_result = score_result_service.get_score_result(score_result_id, session)
     if not score_result:

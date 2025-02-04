@@ -55,7 +55,7 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
 
   const handleLogout = () => {
     dispatch(authActions.logout());
-    router.replace('/sign-in');
+    router.replace('/');
   };
 
   return (

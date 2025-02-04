@@ -59,9 +59,9 @@ export function ModelOverview() {
             valueLabel={
               <Box sx={{ textAlign: 'center', '& span, & p': { lineHeight: 1 } }}>
                 <Typography component="span" sx={{ fontSize: '2rem' }}>
-                  {dataModel?.predictive_power}
+                  {Number(dataModel?.predictive_power).toFixed(2)}
                 </Typography>
-                <Typography variant="body2">Score Index</Typography>
+                <Typography variant="body2">Gini Index</Typography>
               </Box>
             }
             showValueLabel
@@ -78,7 +78,7 @@ export function ModelOverview() {
             valueLabel={
               <Box sx={{ textAlign: 'center', '& span, & p': { lineHeight: 1 } }}>
                 <Typography component="span" sx={{ fontSize: '2rem' }}>
-                  {attributes?.roc_auc}
+                  {Number(attributes?.roc_auc).toFixed(2)}
                 </Typography>
                 <Typography variant="body2">ROC AUG</Typography>
               </Box>

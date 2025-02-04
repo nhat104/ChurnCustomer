@@ -1,5 +1,5 @@
-import type { Control} from 'react-hook-form';
-import type { InputBaseProps, SvgIconTypeMap} from '@mui/material';
+import type { Control } from 'react-hook-form';
+import type { InputBaseProps, SvgIconTypeMap } from '@mui/material';
 import type { OverridableComponent } from '@mui/material/OverridableComponent';
 
 import { useController } from 'react-hook-form';
@@ -60,11 +60,9 @@ export const InputField = ({
             disableRipple
             component="label"
             htmlFor={name}
-            onClick={onClickIcon}>
-            <Icon
-              fontSize="small"
-              sx={{ color: colorIcon || 'text.secondary' }}
-            />
+            onClick={onClickIcon}
+          >
+            <Icon fontSize="small" sx={{ color: colorIcon || 'text.secondary' }} />
           </IconButton>
         )}
       </StyledPaper>

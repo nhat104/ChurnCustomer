@@ -56,13 +56,13 @@ async def upload_data_to_build_model(
     file_handler = FileHandler(data_file)
     file_handler.validate_table_file()
 
-    file_name, file_extension = file_handler.split_file_name()
+    file_name = file_handler.split_file_name()[0]
     name = ml_model_service.isFilenameExist(file_name, user_id, session)
 
-    file_path = file_handler.save_file_with_user_id(user_id)
+    file_path = file_handler.save_model_file_with_user_id(user_id)
 
     status, gini_index, attributes = ml_model_service.build_ml_model(
-        file_path=file_path, file_ext=file_extension, test_size=0.3
+        file_path=file_path, test_size=0.3
     )
 
     new_model = {
@@ -89,17 +89,11 @@ def rebuild_model(
     token: dict = Depends(access_token_bearer),
 ):
     user_id = token["user"]["id"]
-    model = ml_model_service.get_model(model_id, user_id, session)
-    if not model:
-        raise ModelNotFound
 
-    filename = model.filename
-    file_name, file_extension = os.path.splitext(filename)
-    user_folder = os.path.join("data", str(user_id))
-    file_path = os.path.join(user_folder, filename)
+    file_path = ml_model_service.get_file_path(model_id, user_id, session)
 
     status, gini_index, attributes = ml_model_service.build_ml_model(
-        file_path=file_path, file_ext=file_extension, test_size=test_size
+        file_path=file_path, test_size=test_size
     )
 
     rebuild_model = {
@@ -144,6 +138,7 @@ async def upload_data_to_predict(
     token: dict = Depends(access_token_bearer),
 ):
     user_id = token["user"]["id"]
+
     cutoff_selection = float(cutoff_selection)
 
     model = ml_model_service.get_model(model_id, user_id, session)
@@ -153,14 +148,26 @@ async def upload_data_to_predict(
     # validate with FileHandler
     file_handler = FileHandler(data_file)
     file_handler.validate_table_file()
+    # file_handler = FileHandler(data_file)
+    # file_handler.validate_table_file()
+
+    # file_name, file_extension = file_handler.split_file_name()
+    # name = ml_model_service.isFilenameExist(file_name, user_id, session)
+
+    # file_path = file_handler.save_model_file_with_user_id(user_id)
+
+    # status, gini_index, attributes = ml_model_service.build_ml_model(
+    #     file_path=file_path, file_ext=file_extension, test_size=0.3
+    # )
 
     model_path = ml_model_service.get_model_path(model_id, user_id, session)
+    predict_path = file_handler.save_predict_file_with_model_path(model_path=model_path)
 
-    predictions = ml_model_service.predict_with_model(model_path, data=data_file.file)
+    predictions = ml_model_service.predict_with_model(model_path, predict_path)
     score_results = score_result_service.predictions_to_list_score_result(
         predictions, cutoff_selection
     )
-    filename, _ = data_file.filename.split(".")
+    filename = data_file.filename.split(".")[0]
 
     no_exit = int(
         np.sum([1 for _, score, _ in predictions if score >= cutoff_selection])
@@ -170,6 +177,7 @@ async def upload_data_to_predict(
         "ml_model_id": model_id,
         "number_exit": no_exit,
         "number_stay": len(predictions) - no_exit,
+        "file_path": predict_path,
         "cutoff_selection": cutoff_selection,
         "status": "Finished",
         "score_results": score_results,

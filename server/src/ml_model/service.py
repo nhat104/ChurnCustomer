@@ -1,4 +1,5 @@
 import os
+import shutil
 import joblib
 import shap
 import pandas as pd
@@ -59,6 +60,20 @@ class MLModelService:
             return model_path
         return None
 
+    def get_file_path(self, model_id: int, user_id: int, session: SessionDep):
+        statement = select(MLModel).where(
+            MLModel.id == model_id, MLModel.user_id == user_id
+        )
+        model = session.exec(statement).first()
+        if model:
+            file_path = None
+            for attr in model.attributes:
+                if attr.name == "file_path":
+                    file_path = attr.value
+                    break
+            return file_path
+        return None
+
     def create_model_by_user(self, model: dict, session: SessionDep):
         db_model = MLModel(**model)
         session.add(db_model)
@@ -102,9 +117,13 @@ class MLModelService:
         model = self.get_model(model_id, user_id, session)
         if not model:
             return None
-        # model_path = model.path
-        # if os.path.exists(model_path):
-        #     os.remove(model_path)
+
+        model_path = self.get_model_path(model_id, user_id, session)
+        model_folder = os.path.dirname(model_path)
+
+        if os.path.exists(model_folder):
+            shutil.rmtree(model_folder)
+
         session.delete(model)
         session.commit()
         return {"ok": True}
@@ -146,9 +165,9 @@ class MLModelService:
 
         return file_path
 
-    def build_ml_model(self, file_path, file_ext: str, test_size: float):
-
+    def build_ml_model(self, file_path: str, test_size: float):
         start_time = time.time()
+        file_ext = os.path.splitext(file_path)[1]
 
         # Load the data from the file
         df = None
@@ -228,7 +247,7 @@ class MLModelService:
         file_path_name, _ = os.path.splitext(file_path)
 
         # Save the model to a file
-        model_filename = f"{file_path_name}_forest_reg.joblib"
+        model_filename = f"{file_path_name}_model.joblib"
         joblib.dump(forest_reg, model_filename)
 
         churn_pred = forest_reg.predict(X_test)
@@ -251,7 +270,7 @@ class MLModelService:
         kde_points_0 = [[round(x * 10, 1), round(float(kde_0(x)[0]), 2)] for x in marks]
 
         density_distribution = [
-            {"name": "Exit", "data": kde_points_1},
+            {"name": "Churn", "data": kde_points_1},
             {"name": "Stay", "data": kde_points_0},
         ]
 
@@ -285,7 +304,7 @@ class MLModelService:
 
         ks_score_series = [
             {
-                "name": "Exit",
+                "name": "Churn",
                 "data": ks_data[["y_pred", "cumulative_positive"]].values.tolist(),
             },
             {
@@ -325,6 +344,7 @@ class MLModelService:
             ModelAttribute(name="no_columns", value=str(len(X.columns))),
             ModelAttribute(name="target_column", value=target_column),
             ModelAttribute(name="model_path", value=model_filename),
+            ModelAttribute(name="file_path", value=file_path),
             ModelAttribute(name="roc_auc", value=str(round(auc_score, 2))),
             ModelAttribute(
                 name="density_distribution", value=str(density_distribution)
@@ -343,13 +363,22 @@ class MLModelService:
         return "Finished", round(auc_score * 2 - 1, 2), attributes
 
     def predict_with_model(
-        self, model_path: str, data
+        self, model_path: str, predict_path: str
     ) -> list[tuple[str, np.float64, np.array]]:
         # Load the model from a file
         model = joblib.load(model_path)
 
-        df = pd.read_csv(data)
-        surname = df["Surname"]
+        file_ext = os.path.splitext(predict_path)[1]
+        if file_ext == ".csv":
+            df = pd.read_csv(predict_path)
+        elif file_ext == ".xlsx" or file_ext == ".xls":
+            df = pd.read_excel(predict_path)
+
+        # df = pd.read_csv(data)
+        if "Surname" in df.columns:
+            customer_name = df["Surname"]
+        elif "Customer" in df.columns:
+            customer_name = df["Customer"]
 
         if "Exited" in df.columns:
             input_data = df.drop(["Exited"], axis=1)
@@ -398,7 +427,7 @@ class MLModelService:
                 ],
             )
             for name, prob, shap_value, percentage in zip(
-                surname, pred_probability, shap_values, shap_values_percentage
+                customer_name, pred_probability, shap_values, shap_values_percentage
             )
         ]
 

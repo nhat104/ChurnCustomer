@@ -40,13 +40,13 @@ export default function SignupPage() {
       password: formData.get('password') as string,
       confirmPassword: formData.get('confirmPassword') as string,
     };
-    if (formValues.password !== formValues.confirmPassword) {
+    const { confirmPassword, ...signupData } = formValues;
+
+    if (formValues.password !== confirmPassword) {
       setMessage('Password and confirm password do not match');
       setOpenAlert(true);
       return;
     }
-
-    const { confirmPassword, ...signupData } = formValues;
 
     dispatch(actions.signupRequest(signupData));
   };

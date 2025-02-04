@@ -22,7 +22,7 @@ class ScoreResultService:
     ) -> list[ScoreResult]:
         score_results = []
         for prediction in predictions:
-            resolution = "Exit" if prediction[1] >= cutoff_selection else "Stay"
+            resolution = "Churn" if prediction[1] >= cutoff_selection else "Stay"
             score_results.append(
                 ScoreResult(
                     name=prediction[0],

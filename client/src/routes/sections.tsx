@@ -9,6 +9,7 @@ import { AuthLayout } from 'src/layouts/auth';
 import { useAppSelector } from 'src/store/hooks';
 import { DashboardLayout } from 'src/layouts/dashboard';
 import { selectAuth } from 'src/pages/sign-in/slice/selectors';
+import { DashboardPublicLayout } from 'src/layouts/dashboard-public';
 
 // ----------------------------------------------------------------------
 
@@ -16,6 +17,7 @@ export const DashboardPage = lazy(() => import('src/pages/dashboard'));
 export const ModelPage = lazy(() => import('src/pages/models'));
 export const ModelDetailPage = lazy(() => import('src/pages/model-detail'));
 export const ScoreHistoryPage = lazy(() => import('src/pages/score-history'));
+export const ScoreHistoryPublicPage = lazy(() => import('src/pages/score-history-public'));
 export const ScoreDetailPage = lazy(() => import('src/pages/score-detail'));
 // export const MonitoringPage = lazy(() => import('src/pages/monitoring'));
 export const SignInPage = lazy(() => import('src/pages/sign-in'));
@@ -41,11 +43,35 @@ const AuthRoute = (props: { type: 'PUBLIC' | 'PRIVATE'; children: ReactElement }
   const { type, children } = props;
   const { dataAuth } = useAppSelector(selectAuth);
 
-  if (type === 'PRIVATE' && !dataAuth?.access_token) {
-    return <Navigate to="/sign-in" />;
+  if (type === 'PUBLIC' && !dataAuth?.access_token) {
+    console.log('PUBLIC');
+
+    return children;
   }
 
-  return children;
+  if (type === 'PRIVATE' && dataAuth?.access_token) {
+    return children;
+  }
+
+  const { pathname } = window.location;
+  console.log(`pathname${pathname}`);
+
+  if (pathname === '/' && !dataAuth?.access_token) {
+    return <Navigate to="/scores" />;
+  }
+
+  return <Navigate to={type === 'PRIVATE' ? '/sign-in' : '/404'} />;
+  // return <Navigate to="/404" />;
+
+  // if (type === 'PRIVATE' && !dataAuth?.access_token) {
+  //   return <Navigate to="/score" />;
+  // }
+
+  // if (type === 'PUBLIC' && dataAuth?.access_token) {
+  //   return <Navigate to="/" />;
+  // }
+
+  // return children;
 };
 
 export function Router() {
@@ -76,7 +102,25 @@ export function Router() {
             { path: ':scoreId', element: <ScoreDetailPage /> },
           ],
         },
-        // { path: 'monitoring', element: <MonitoringPage /> },
+      ],
+    },
+    {
+      path: 'scores',
+      element: (
+        <AuthRoute type="PUBLIC">
+          <DashboardPublicLayout>
+            <Suspense fallback={renderFallback}>
+              <Outlet />
+            </Suspense>
+          </DashboardPublicLayout>
+        </AuthRoute>
+      ),
+      children: [
+        { element: <ScoreHistoryPublicPage />, index: true },
+        {
+          path: ':scoreId',
+          element: <ScoreDetailPage />,
+        },
       ],
     },
     {

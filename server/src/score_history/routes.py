@@ -33,18 +33,29 @@ def read_score_histories_by_user(
     return APIResponse(data=score_histories)
 
 
+# read all score history, don't need to be authenticated
+@score_history_router.get(
+    "/all", response_model=APIResponse[list[ScoreHistoryWithModel]]
+)
+def read_all_score_histories(
+    session: SessionDep,
+    offset: int = 0,
+    limit: Annotated[int, Query(le=100)] = 100,
+):
+    score_histories = score_history_service.get_all_score_histories(
+        session, offset=offset, limit=limit
+    )
+    return APIResponse(data=score_histories)
+
+
 @score_history_router.get(
     "/{score_history_id}", response_model=APIResponse[ScoreHistoryPublicWithResult]
 )
 def read_score_history(
     score_history_id: int,
     session: SessionDep,
-    token: dict = Depends(access_token_bearer),
 ):
-    user_id = token["user"]["id"]
-    score_history = score_history_service.get_score_history(
-        score_history_id, user_id, session
-    )
+    score_history = score_history_service.get_score_history(score_history_id, session)
     if not score_history:
         raise ModelNotFound
 

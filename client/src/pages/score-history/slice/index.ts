@@ -27,6 +27,19 @@ const slice = createSlice({
       state.loading = false;
       state.error = true;
     },
+
+    scoreHistoryAllUserRequest(state, action: PayloadAction<QueryParams>) {
+      state.loading = true;
+      state.error = false;
+    },
+    scoreHistoryAllUserSuccess(state, action: PayloadAction<ScoreHistoryResponse[]>) {
+      state.loading = false;
+      state.dataScoreHistories = action.payload;
+    },
+    scoreHistoryAllUserError(state) {
+      state.loading = false;
+      state.error = true;
+    },
   },
 });
 

@@ -63,3 +63,11 @@ export const navData = [
   //   icon: icon('ic-disabled'),
   // },
 ];
+
+export const navDataPublic = [
+  {
+    title: 'Scoring history',
+    path: '/scores',
+    icon: icon('ic-cart'),
+  },
+];
