@@ -1,6 +1,12 @@
+import sys
+import os
+
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
+
+# Add the project directory to the Python path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from utils.database import lifespan
 from utils.errors import register_all_errors

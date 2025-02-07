@@ -4,17 +4,25 @@ from contextlib import asynccontextmanager
 from fastapi import Depends, FastAPI
 from sqlmodel import Session, SQLModel, create_engine, select
 
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
+
 from utils.models import User
 from common.algorithm import generate_password_hash
 from config import Config
 
 # Create the database engine
 engine = create_engine(Config.DATABASE_URL, echo=True)
+# engine = create_async_engine(Config.DATABASE_URL, future=True, echo=True)
+
+# Create session factory
+# async_session_maker = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
 
 # Create a session dependency
 def get_session():
     with Session(engine) as session:
+        # with async_session_maker() as session:
         yield session
 
 
