@@ -44,8 +44,6 @@ const AuthRoute = (props: { type: 'PUBLIC' | 'PRIVATE'; children: ReactElement }
   const { dataAuth } = useAppSelector(selectAuth);
 
   if (type === 'PUBLIC' && !dataAuth?.access_token) {
-    console.log('PUBLIC');
-
     return children;
   }
 
@@ -54,7 +52,6 @@ const AuthRoute = (props: { type: 'PUBLIC' | 'PRIVATE'; children: ReactElement }
   }
 
   const { pathname } = window.location;
-  console.log(`pathname${pathname}`);
 
   if (pathname === '/' && !dataAuth?.access_token) {
     return <Navigate to="/scores" />;

@@ -47,7 +47,14 @@ export default function PredictBox({ cutoffValue }: PredictBoxProps) {
         newFile.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
         newFile.type === 'text/csv'
       ) {
-        console.log(newFile.name.split('.').slice(0, -1).join('.'));
+        const formData = new FormData();
+        formData.append('data_file', newFile);
+        dispatch(
+          dashboardActions.predictRequest({
+            modelId: Number(modelId),
+            body: formData,
+          })
+        );
       } else {
         console.error('Invalid file type');
       }

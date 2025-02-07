@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  fastapi-app:
+    build: .
+    ports:
+      - '8000:80'
+    depends_on:
+      mysql:
+        condition: service_healthy # Đợi MySQL khởi động xong
+    env_file:
+      - .env
+    environment:
+      # - DATABASE_URL=mysql+mysqlconnector://root:123@mysql:3306/customer_churn
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_ALGORITHM=${JWT_ALGORITHM}
+
+  mysql:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 123
+      MYSQL_DATABASE: customer_churn
+    ports:
+      - '3306:3306'
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck: # Kiểm tra MySQL đã sẵn sàng chưa
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
+      interval: 5s
+      retries: 5
+
+volumes:
+  mysql_data:
