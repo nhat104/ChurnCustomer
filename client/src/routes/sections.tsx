@@ -43,32 +43,27 @@ const AuthRoute = (props: { type: 'PUBLIC' | 'PRIVATE'; children: ReactElement }
   const { type, children } = props;
   const { dataAuth } = useAppSelector(selectAuth);
 
-  if (type === 'PUBLIC' && !dataAuth?.access_token) {
-    return children;
-  }
-
-  if (type === 'PRIVATE' && dataAuth?.access_token) {
-    return children;
-  }
-
-  const { pathname } = window.location;
-
-  if (pathname === '/' && !dataAuth?.access_token) {
-    return <Navigate to="/scores" />;
-  }
-
-  return <Navigate to={type === 'PRIVATE' ? '/sign-in' : '/404'} />;
-  // return <Navigate to="/404" />;
-
-  // if (type === 'PRIVATE' && !dataAuth?.access_token) {
-  //   return <Navigate to="/score" />;
+  // if (type === 'PUBLIC' && !dataAuth?.access_token) {
+  //   return children;
   // }
 
-  // if (type === 'PUBLIC' && dataAuth?.access_token) {
-  //   return <Navigate to="/" />;
+  // if (type === 'PRIVATE' && dataAuth?.access_token) {
+  //   return children;
   // }
 
-  // return children;
+  // const { pathname } = window.location;
+
+  // if (pathname === '/' && !dataAuth?.access_token) {
+  //   return <Navigate to="/scores" />;
+  // }
+
+  // return <Navigate to={type === 'PRIVATE' ? '/sign-in' : '/404'} />;
+
+  if (type === 'PRIVATE' && !dataAuth?.access_token) {
+    return <Navigate to="/sign-in" />;
+  }
+
+  return children;
 };
 
 export function Router() {

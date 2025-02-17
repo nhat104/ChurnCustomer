@@ -21,13 +21,13 @@
 
 
 
-FROM python:3.10
+FROM python:3.10-slim
 
 WORKDIR /app
 COPY ./requirements.txt /app/requirements.txt
 
-# RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
-RUN pip install -r /app/requirements.txt
+RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
+# RUN pip install -r /app/requirements.txt
 
 COPY ./src /app/src
 
@@ -39,48 +39,35 @@ CMD ["fastapi", "run", "src/app.py", "--port", "80"]
 
 
 
-
-# FROM alpine:3.19
-
-# # Install dependencies (Python, Pip, venv, and bash)
-# # RUN apk add --no-cache python3 py3-pip python3-dev py3-virtualenv bash
-# RUN apk add --no-cache \
-#   python3 \
-#   py3-pip \
-#   python3-dev \
-#   py3-virtualenv \
-#   bash \
-#   build-base \
-#   gcc \
-#   libc-dev \
-#   openblas-dev \
-#   lapack-dev \
-#   musl-dev \
-#   libffi-dev \
-#   gfortran
+# # Stage 1: Build dependencies in a larger image
+# FROM python:3.10-slim as builder
 
 # # Set the working directory
 # WORKDIR /app
 
-# # Create a virtual environment
-# RUN python3 -m venv /app/venv
+# # Install required system dependencies for building packages
+# RUN apt-get update && apt-get install -y --no-install-recommends \
+#   gcc g++ build-essential python3-dev \
+#   && rm -rf /var/lib/apt/lists/*
 
-# # Activate venv and install dependencies
+# # Install dependencies in a virtual environment
+# RUN python -m venv /opt/venv
+# ENV PATH="/opt/venv/bin:$PATH"
+
 # COPY ./requirements.txt /app/requirements.txt
-# RUN /app/venv/bin/pip install --no-cache-dir -r /app/requirements.txt
+# RUN pip install --no-cache-dir -r /app/requirements.txt
 
-# # Copy application source code
+# # Stage 2: Create a minimal final image
+# FROM python:3.10-slim
+
+# WORKDIR /app
+
+# # Copy only the necessary files from the builder stage
+# COPY --from=builder /opt/venv /opt/venv
 # COPY ./src /app/src
 
-# # Create a non-root user
-# RUN adduser -D new_user && chown -R new_user:new_user /app
-
-# # Switch to non-root user
-# USER new_user
-
-# # Set environment variable for Python
-# ENV PYTHONPATH="/app/src"
-# ENV PATH="/app/venv/bin:$PATH"
+# # Set the environment path
+# ENV PATH="/opt/venv/bin:$PATH"
 
 # # Run FastAPI with Uvicorn
 # CMD ["fastapi", "run", "src/app.py", "--port", "80"]

@@ -16,7 +16,7 @@ engine = create_engine(Config.DATABASE_URL, echo=True)
 # engine = create_async_engine(Config.DATABASE_URL, future=True, echo=True)
 
 # Create session factory
-# async_session_maker = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
+# SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 # Create a session dependency
@@ -30,7 +30,6 @@ SessionDep = Annotated[Session, Depends(get_session)]
 
 
 def create_dummy_data():
-
     with Session(engine) as session:
         user = User(
             username="nhatmm",
